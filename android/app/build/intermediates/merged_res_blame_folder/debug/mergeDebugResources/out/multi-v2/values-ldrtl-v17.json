@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.nyayasim.app-mergeDebugResources-76:/values-ldrtl-v17/values-ldrtl-v17.xml",
+            "map": [
+                {
+                    "source": "/Users/rahulchaudhary/.gradle/caches/9.0.0/transforms/8d891a8191ab1a82ffa8f4ff13fa2a52/transformed/material-1.12.0/res/values-ldrtl-v17/values-ldrtl-v17.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,191",
+                        "endColumns": "135,140",
+                        "endOffsets": "186,327"
+                    }
+                }
+            ]
+        }
+    ]
+}
