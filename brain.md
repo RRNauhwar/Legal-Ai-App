@@ -117,20 +117,7 @@ If the backend is offline or no API keys are configured, the app falls back to a
 7. **Judge Beaks Path (`/judge-beaks`)**: A dedicated gamified skill tree UI to guide students through learning modules step-by-step.
 8. **Billing & Recruiters (`/career`)**: Workspace operations displaying membership details, top verified candidates calculated from real database scores, and system audit logs.
 
----
 
-## 🤖 Telegram Bot Control via n8n Agent
 
-NyayaSim supports complete remote operations through an n8n AI Agent workflow.
 
-### Integration Features:
-- **Telegram Webhook**: Triggers on incoming Telegram messages from a registered bot.
-- **AI Agent Node**: Uses n8n's LangChain AI Agent nodes to route requests and determine intent.
-- **Dynamic Identity Injector**: Automatically binds the sender's Telegram User ID and First Name to `X-Demo-User-Id` and `X-Demo-User-Name` headers, authenticating them as a Guest user in the database.
-- **Supported API Tools**:
-  - `get_my_stats`: Pulls user courtroom trials, win rates, and ranking badges.
-  - `get_leaderboard`: Fetches the global advocate standings.
-  - `generate_case`: Instantly creates new civil, criminal, constitutional, family, or cyber cases.
-  - `list_cases`: Lists available cases in the library.
-  - `create_forum_post`: Directly posts messages to the community feed.
 

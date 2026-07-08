@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Red String — An AI-powered murder mystery detective game. Solve complex cases through evidence analysis, interrogation, forensics, and logical deduction.">
+  <title>Red String — Murder Chronicles</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/crime-scene.css">
+  <link rel="stylesheet" href="css/evidence-board.css">
+  <link rel="stylesheet" href="css/notebook.css">
+  <link rel="stylesheet" href="css/interrogation.css">
+  <link rel="stylesheet" href="css/forensics.css">
+  <link rel="stylesheet" href="css/puzzles.css">
+</head>
+<body>
+  <div id="app">
+    
+    <!-- ============================================================
+         RAIN PARTICLES (ambient effect)
+         ============================================================ -->
+    <div class="rain-container" id="rain-container"></div>
+
+    <!-- ============================================================
+         LOADING SCREEN
+         ============================================================ -->
+    <div id="screen-loading" class="screen loading-screen active">
+      <div class="loading-logo" data-text="Red String">Red String</div>
+      <div class="loading-bar">
+        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+      </div>
+      <div class="loading-text" id="loading-text">Initializing systems...</div>
+    </div>
+
+    <!-- ============================================================
+         MAIN MENU SCREEN
+         ============================================================ -->
+    <div id="screen-menu" class="screen menu-screen">
+      <div class="menu-bg-grid"></div>
+      <div class="menu-content">
+        <div class="menu-title">
+          <h1>Red String</h1>
+          <div class="subtitle">Murder Chronicles</div>
+        </div>
+        <p class="menu-tagline">
+          Step into the mind of a detective. Analyze evidence, interrogate suspects, 
+          uncover lies, and solve murders that will test the limits of your logic.
+        </p>
+        <div class="menu-actions stagger-children">
+          <!-- New Game -->
+          <button class="menu-btn" id="btn-new-game">
+            <div class="menu-btn-icon amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+            </div>
+            <div class="menu-btn-text">
+              <div class="menu-btn-title">New Investigation</div>
+              <div class="menu-btn-desc">Begin a new murder case</div>
+            </div>
+            <div class="menu-btn-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </button>
+          <!-- Continue -->
+          <button class="menu-btn" id="btn-continue">
+            <div class="menu-btn-icon sapphire">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+                <polyline points="21 3 21 12 12 12"></polyline>
+              </svg>
+            </div>
+            <div class="menu-btn-text">
+              <div class="menu-btn-title">Continue Case</div>
+              <div class="menu-btn-desc">Resume your investigation</div>
+            </div>
+            <div class="menu-btn-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </button>
+          <!-- Case Files -->
+          <button class="menu-btn" id="btn-case-files">
+            <div class="menu-btn-icon emerald">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+              </svg>
+            </div>
+            <div class="menu-btn-text">
+              <div class="menu-btn-title">Case Files</div>
+              <div class="menu-btn-desc">Browse all murder cases</div>
+            </div>
+            <div class="menu-btn-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </button>
+          <!-- Settings -->
+          <button class="menu-btn" id="btn-settings">
+            <div class="menu-btn-icon crimson">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </div>
+            <div class="menu-btn-text">
+              <div class="menu-btn-title">Settings</div>
+              <div class="menu-btn-desc">Audio, display, AI configuration</div>
+            </div>
+            <div class="menu-btn-arrow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div class="menu-footer">v1.0.0 — Built with obsession for detail</div>
+    </div>
+
+    <!-- ============================================================
+         CASE SELECT SCREEN
+         ============================================================ -->
+    <div id="screen-case-select" class="screen case-select-screen">
+      <div class="case-select-header">
+        <h2>Case Files</h2>
+        <p>Select a murder case to investigate. Cases unlock as you prove your detective skills.</p>
+      </div>
+      <div class="case-grid" id="case-grid">
+        <!-- Case cards populated dynamically -->
+      </div>
+      <div style="text-align: center; padding: 0 0 2rem;">
+        <button class="btn btn-ghost" id="btn-back-menu">← Back to Menu</button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         BRIEFING SCREEN
+         ============================================================ -->
+    <div id="screen-briefing" class="screen briefing-screen">
+      <div class="briefing-container" id="briefing-container">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- ============================================================
+         GAME SCREEN (main investigation)
+         ============================================================ -->
+    <div id="screen-game" class="screen">
+      <div class="game-layout">
+        <!-- Top Bar -->
+        <div class="game-topbar">
+          <div class="topbar-left">
+            <span class="case-level" id="game-case-level">LVL 1</span>
+            <span class="case-title" id="game-case-title">The Silent Roommate</span>
+          </div>
+          <div class="topbar-center">
+            <div class="game-timer" id="game-timer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span id="timer-display">00:00:00</span>
+            </div>
+          </div>
+          <div class="topbar-right">
+            <div class="evidence-counter" id="evidence-counter">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              </svg>
+              <span id="evidence-count">0/15</span>
+            </div>
+            <button class="btn-icon tooltip" data-tooltip="Hints" id="btn-hint">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </button>
+            <button class="btn-icon tooltip" data-tooltip="Settings" id="btn-game-settings">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <button class="btn btn-danger btn-sm" id="btn-accuse">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              Make Accusation
+            </button>
+          </div>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <nav class="game-sidebar">
+          <button class="sidebar-item active tooltip" data-tooltip="Crime Scene" data-view="crime-scene" id="nav-crime-scene">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </button>
+          <button class="sidebar-item tooltip" data-tooltip="Interrogation" data-view="interrogation" id="nav-interrogation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          </button>
+          <button class="sidebar-item tooltip" data-tooltip="Forensics Lab" data-view="forensics" id="nav-forensics">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </button>
+          
+          <div class="sidebar-divider"></div>
+          
+          <button class="sidebar-item tooltip" data-tooltip="Evidence Board" data-view="evidence-board" id="nav-evidence-board">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          </button>
+          <button class="sidebar-item tooltip" data-tooltip="Notebook" data-view="notebook" id="nav-notebook">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          </button>
+          
+          <div class="sidebar-divider"></div>
+          
+          <button class="sidebar-item tooltip" data-tooltip="Puzzles" data-view="puzzles" id="nav-puzzles">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </button>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="game-main" id="game-main">
+          <!-- Crime Scene View -->
+          <div id="view-crime-scene" class="view active">
+            <div class="crime-scene-view" id="crime-scene-container">
+              <!-- Populated by CrimeSceneUI -->
+            </div>
+          </div>
+
+          <!-- Interrogation View -->
+          <div id="view-interrogation" class="view">
+            <div class="interrogation-view" id="interrogation-container">
+              <!-- Populated by InterrogationUI -->
+            </div>
+          </div>
+
+          <!-- Forensics View -->
+          <div id="view-forensics" class="view">
+            <div class="forensics-view" id="forensics-container">
+              <!-- Populated by ForensicsUI -->
+            </div>
+          </div>
+
+          <!-- Evidence Board View -->
+          <div id="view-evidence-board" class="view">
+            <div class="evidence-board-view" id="evidence-board-container">
+              <!-- Populated by EvidenceBoardUI -->
+            </div>
+          </div>
+
+          <!-- Notebook View -->
+          <div id="view-notebook" class="view">
+            <div class="notebook-view" id="notebook-container">
+              <!-- Populated by NotebookUI -->
+            </div>
+          </div>
+
+          <!-- Puzzles View -->
+          <div id="view-puzzles" class="view">
+            <div class="puzzle-view" id="puzzles-container">
+              <!-- Populated by PuzzleUI -->
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         RESULTS SCREEN
+         ============================================================ -->
+    <div id="screen-results" class="screen results-screen">
+      <div class="results-container" id="results-container">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL OVERLAY
+         ============================================================ -->
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal" id="modal">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modal-title"></h3>
+          <button class="modal-close" id="modal-close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" id="modal-body"></div>
+        <div class="modal-footer" id="modal-footer"></div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+         TOAST CONTAINER
+         ============================================================ -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ============================================================
+         ACCUSATION MODAL
+         ============================================================ -->
+    <div class="modal-overlay" id="accusation-overlay">
+      <div class="modal" style="max-width: 700px;">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--crimson)" stroke-width="2" style="display: inline; vertical-align: middle; margin-right: 8px;">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Make Your Accusation
+          </h3>
+          <button class="modal-close" id="accusation-close">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p class="text-secondary mb-4" style="font-size: var(--text-sm);">
+            Present your complete theory. You must identify all elements correctly to solve the case.
+            <strong class="text-danger">You have <span id="attempts-remaining">3</span> attempts remaining.</strong>
+          </p>
+          
+          <div class="flex flex-col gap-4" id="accusation-form">
+            <!-- Murderer -->
+            <div class="input-group">
+              <label class="input-label">Who is the murderer?</label>
+              <select class="input" id="acc-murderer" style="background: var(--bg-secondary); padding: 12px 16px;">
+                <option value="">Select suspect...</option>
+              </select>
+            </div>
+            <!-- Weapon -->
+            <div class="input-group">
+              <label class="input-label">Murder Weapon</label>
+              <select class="input" id="acc-weapon" style="background: var(--bg-secondary); padding: 12px 16px;">
+                <option value="">Select evidence...</option>
+              </select>
+            </div>
+            <!-- Method -->
+            <div class="input-group">
+              <label class="input-label">Method of Killing</label>
+              <input type="text" class="input" id="acc-method" placeholder="How was the victim killed?" style="background: var(--bg-secondary); padding: 12px 16px;">
+            </div>
+            <!-- Motive -->
+            <div class="input-group">
+              <label class="input-label">Motive</label>
+              <input type="text" class="input" id="acc-motive" placeholder="Why was the victim killed?" style="background: var(--bg-secondary); padding: 12px 16px;">
+            </div>
+            <!-- Supporting Evidence -->
+            <div class="input-group">
+              <label class="input-label">Supporting Evidence (select all that apply)</label>
+              <div class="flex flex-wrap gap-2" id="acc-evidence">
+                <!-- Populated with checkboxes -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="acc-cancel">Cancel</button>
+          <button class="btn btn-danger" id="acc-submit">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+            Submit Accusation
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       JAVASCRIPT
+       Load order matters: utilities → engines → UI → app
+       ============================================================ -->
+  <!-- Utilities -->
+  <script src="js/utils/EventBus.js"></script>
+  <script src="js/utils/DOMUtils.js"></script>
+  
+  <!-- Core Engines -->
+  <script src="js/engine/StateManager.js"></script>
+  <script src="js/engine/CaseLoader.js"></script>
+  <script src="js/engine/InvestigationEngine.js"></script>
+  <script src="js/engine/DeductionEngine.js"></script>
+  <script src="js/engine/ScoringEngine.js"></script>
+  <script src="js/engine/HintEngine.js"></script>
+  <script src="js/engine/GameEngine.js"></script>
+  
+  <!-- AI / Dialogue -->
+  <script src="js/ai/ScriptedDialogue.js"></script>
+  <script src="js/ai/PersonalityEngine.js"></script>
+  <script src="js/ai/AIBridge.js"></script>
+  <script src="js/ai/PromptBuilder.js"></script>
+  <script src="js/engine/DialogueEngine.js"></script>
+  
+  <!-- UI Components -->
+  <script src="js/ui/components/AudioManager.js"></script>
+  <script src="js/ui/components/Modal.js"></script>
+  <script src="js/ui/components/Toast.js"></script>
+  <script src="js/ui/ScreenManager.js"></script>
+  <script src="js/ui/CrimeSceneUI.js"></script>
+  <script src="js/ui/NotebookUI.js"></script>
+  <script src="js/ui/InterrogationUI.js"></script>
+  <script src="js/ui/EvidenceBoardUI.js"></script>
+  <script src="js/ui/ForensicsUI.js"></script>
+  <script src="js/ui/PuzzleUI.js"></script>
+  
+  <!-- App Bootstrap -->
+  <script src="js/app.js"></script>
+</body>
+</html>

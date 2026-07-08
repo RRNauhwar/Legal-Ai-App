@@ -10,7 +10,6 @@ import roomRoutes from './routes/rooms.js';
 import communityRoutes from './routes/community.js';
 import ratingRoutes from './routes/ratings.js';
 import statRoutes from './routes/stats.js';
-import './services/telegramBot.js';
 import {
   auditLog,
   csrfGuard,

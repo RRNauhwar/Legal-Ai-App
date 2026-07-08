@@ -1,0 +1,370 @@
+{
+  "id": "case-01-silent-roommate",
+  "title": "The Silent Roommate",
+  "description": "Rohan Kapoor, a 22-year-old CS student, is found dead in the living room of his shared university apartment. Initial clues suggest a messy break-in, but forensic inconsistencies quickly emerge.",
+  "briefing": "Detective, we have a fresh scene at the university quarter. Rohan Kapoor was found dead by neighbor Kavya Nair this morning. The front window was shattered. The roommate, Arjun Mehta, claims he was at the campus library all night. You need to verify his alibi, inspect the glass fracture fragments, and determine who really committed this crime.",
+  "difficulty": 1,
+  "victim": {
+    "name": "Rohan Kapoor",
+    "age": 22,
+    "occupation": "Computer Science Student",
+    "causeOfDeath": "Blunt force trauma to the temporal bone",
+    "timeOfDeath": "Monday evening, between 9:00 PM and 10:00 PM",
+    "location": "Living Room, shared flat 302",
+    "personality": "Possessive, demanding, organized",
+    "background": "Third-year CS undergrad, currently working on grade manipulation complaints against a faculty member."
+  },
+  "suspects": [
+    {
+      "id": "arjun",
+      "name": "Arjun Mehta",
+      "relationship": "Victim's Roommate",
+      "age": 23,
+      "motive": "Rohan discovered Arjun had been stealing thousands of rupees from his drawer and threatened to call the police.",
+      "alibi": {
+        "claimed": "I left the apartment at 7:00 PM to study at the college library. I stayed there until 11:00 PM, then came back and went straight to sleep. I didn't see or hear anything.",
+        "truth": "Arjun never left the apartment. He killed Rohan at 9:15 PM during an argument, staged the break-in from the inside, and hid the victim's phone."
+      },
+      "personality": {
+        "traits": ["Nervous", "Evasive", "Fidgety"],
+        "speakingStyle": "Hesitant, speaks in short defensive sentences, stutters when cornered"
+      },
+      "dialogueTree": {
+        "startNode": "greeting",
+        "nodes": {
+          "greeting": {
+            "id": "greeting",
+            "responses": ["Look, I've already told the officers everything. I was at the library. This is a nightmare."],
+            "keywords": ["hello", "hi", "who are you"]
+          },
+          "alibi": {
+            "id": "alibi",
+            "keywords": ["library", "where were you", "what time", "alibi"],
+            "responses": ["I told you, I went to the library at 7 PM. Ask anyone. I was studying for my semester finals."],
+            "contradiction": "CCTV records and Arjun's phone WiFi logs show he never left Flat 302."
+          }
+        },
+        "evidenceReactions": {
+          "EV-03": {
+            "text": "The glass fragments? Well... the intruder must have kicked the window in. Why are you asking me about glass?",
+            "emotion": "nervous",
+            "contradiction": "Glass fragments fell on the outside of the window sill, showing it was smashed from INSIDE."
+          },
+          "EV-04": {
+            "text": "The CCTV didn't show me leaving? That... that's impossible. The campus cameras must have been offline, or I used the back stairwell door!",
+            "emotion": "scared",
+            "revealsInfo": "Arjun admits he did not go to the library."
+          }
+        }
+      }
+    },
+    {
+      "id": "priya",
+      "name": "Priya Sharma",
+      "relationship": "Victim's Girlfriend",
+      "age": 21,
+      "motive": "Wanted to end their relationship due to Rohan's possessiveness.",
+      "alibi": {
+        "claimed": "I was at my hostel room studying all evening. My roommate can vouch for me."
+      },
+      "dialogueTree": {
+        "startNode": "greeting",
+        "nodes": {
+          "greeting": {
+            "id": "greeting",
+            "responses": ["I can't believe Rohan is gone... we had an argument, but I didn't want this!"]
+          }
+        }
+      }
+    },
+    {
+      "id": "rao",
+      "name": "Prof. Vikram Rao",
+      "relationship": "CS Professor",
+      "age": 48,
+      "motive": "Rohan was blackmailing him with proof of grade manipulation.",
+      "alibi": {
+        "claimed": "I was at the department faculty dinner from 7:00 PM to 10:30 PM with eight other faculty members."
+      },
+      "dialogueTree": {
+        "startNode": "greeting",
+        "nodes": {
+          "greeting": {
+            "id": "greeting",
+            "responses": ["Rohan was a difficult student, yes, but I am shocked by this tragedy."]
+          }
+        }
+      }
+    },
+    {
+      "id": "kavya",
+      "name": "Kavya Nair",
+      "relationship": "Neighbor",
+      "age": 24,
+      "motive": "None. Has a secret relationship with roommate Arjun.",
+      "alibi": {
+        "claimed": "I was watching TV in my apartment. I heard arguing around 9:00 PM but couldn't distinguish the voices."
+      },
+      "dialogueTree": {
+        "startNode": "greeting",
+        "nodes": {
+          "greeting": {
+            "id": "greeting",
+            "responses": ["I heard arguing... it sounded loud, but I didn't think much of it until the police arrived."]
+          }
+        }
+      }
+    },
+    {
+      "id": "ravi",
+      "name": "Ravi (Delivery)",
+      "relationship": "Food Delivery Driver",
+      "age": 29,
+      "motive": "None. Delivered drug package to Rohan.",
+      "alibi": {
+        "claimed": "I dropped off the order at 8:30 PM, handed it to Rohan, and left immediately."
+      },
+      "dialogueTree": {
+        "startNode": "greeting",
+        "nodes": {
+          "greeting": {
+            "id": "greeting",
+            "responses": ["I just deliver packages. I don't know anything about roommate arguments."]
+          }
+        }
+      }
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-living-room",
+      "name": "Living Room (Crime Scene)",
+      "objects": [
+        {
+          "id": "obj-body",
+          "name": "Rohan's Body",
+          "description": "Rohan Kapoor is lying on his side on the carpet. A pool of blood surrounds his head.",
+          "x": "40%",
+          "y": "50%",
+          "width": "180px",
+          "height": "90px"
+        },
+        {
+          "id": "obj-bookend",
+          "name": "Heavy Brass Bookend",
+          "description": "A heavy decorative bookend sits on the bookshelf. Wiped clean of fingerprints, but blood spots remain in the crevices.",
+          "evidenceId": "EV-01",
+          "x": "15%",
+          "y": "25%",
+          "width": "60px",
+          "height": "60px"
+        },
+        {
+          "id": "obj-window",
+          "name": "Broken Window",
+          "description": "The balcony window pane is shattered. Broken glass fragments are scattered about.",
+          "evidenceId": "EV-02",
+          "x": "75%",
+          "y": "20%",
+          "width": "100px",
+          "height": "120px"
+        }
+      ]
+    },
+    {
+      "id": "scene-kitchen",
+      "name": "Kitchen",
+      "objects": [
+        {
+          "id": "obj-plates",
+          "name": "Dinner Plates",
+          "description": "Two dirty plates are left in the kitchen sink. Curiously, Arjun claimed he wasn't home for dinner.",
+          "evidenceId": "EV-10",
+          "x": "45%",
+          "y": "40%",
+          "width": "80px",
+          "height": "80px"
+        },
+        {
+          "id": "obj-arjun-phone",
+          "name": "Arjun's Phone",
+          "description": "Arjun's secondary mobile is sitting in a drawer, connected to the home WiFi network.",
+          "evidenceId": "EV-05",
+          "x": "20%",
+          "y": "50%",
+          "width": "50px",
+          "height": "50px"
+        }
+      ]
+    },
+    {
+      "id": "scene-bedroom",
+      "name": "Arjun's Bedroom",
+      "objects": [
+        {
+          "id": "obj-cash",
+          "name": "Hidden Stash of Cash",
+          "description": "Under Arjun's mattress is a bundle of ₹15,000 cash, matches the amount Rohan withdrew yesterday.",
+          "evidenceId": "EV-08",
+          "x": "35%",
+          "y": "60%",
+          "width": "70px",
+          "height": "70px"
+        }
+      ]
+    },
+    {
+      "id": "scene-entrance",
+      "name": "Building Lobby",
+      "objects": [
+        {
+          "id": "obj-cctv",
+          "name": "CCTV Monitor",
+          "description": "CCTV lobby footage covering Monday evening 7:00 PM to 11:00 PM.",
+          "evidenceId": "EV-04",
+          "x": "60%",
+          "y": "30%",
+          "width": "110px",
+          "height": "80px"
+        }
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "EV-01",
+      "name": "Brass Bookend"
+    },
+    {
+      "id": "EV-02",
+      "name": "Broken Window"
+    },
+    {
+      "id": "EV-03",
+      "name": "Glass sill fragments"
+    },
+    {
+      "id": "EV-04",
+      "name": "Lobby CCTV footage"
+    },
+    {
+      "id": "EV-05",
+      "name": "Arjun's phone in drawer"
+    },
+    {
+      "id": "EV-06",
+      "name": "Rohan's Laptop Transaction logs"
+    },
+    {
+      "id": "EV-07",
+      "name": "Rohan's handwritten note"
+    },
+    {
+      "id": "EV-08",
+      "name": "₹15,000 hidden cash"
+    },
+    {
+      "id": "EV-09",
+      "name": "Ravi's delivery slip"
+    },
+    {
+      "id": "EV-10",
+      "name": "Dirty sink plates"
+    },
+    {
+      "id": "EV-11",
+      "name": "Rohan's missing phone"
+    },
+    {
+      "id": "EV-12",
+      "name": "Priya's text logs"
+    },
+    {
+      "id": "EV-13",
+      "name": "Professor Rao's reports"
+    },
+    {
+      "id": "EV-14",
+      "name": "Kavya's neighbor testimony"
+    },
+    {
+      "id": "EV-15",
+      "name": "Autopsy and Forensic report"
+    }
+  ],
+  "forensics": [
+    {
+      "id": "forensic-autopsy",
+      "title": "Autopsy & Medical Report",
+      "type": "autopsy",
+      "description": "Medical examiner details regarding Rohan Kapoor.",
+      "results": {
+        "cause_of_death": "Traumatic skull fracture from high energy impact",
+        "time_of_death": "Monday night, 9:00 PM - 9:45 PM",
+        "assailant_profile": "Right-handed blow from height"
+      },
+      "conclusion": "The victim was struck once from behind with a heavy blunt object. Death was nearly instantaneous."
+    },
+    {
+      "id": "forensic-fingerprints",
+      "title": "Fingerprint Match",
+      "type": "fingerprints",
+      "description": "Latent prints compared on the Brass Bookend base.",
+      "linkedEvidence": ["EV-01"],
+      "conclusion": "Wiped, but a partial print matches Arjun Mehta's little finger."
+    }
+  ],
+  "puzzles": [
+    {
+      "id": "puzzle-phone-lock",
+      "title": "Arjun's Phone Lock",
+      "type": "lock",
+      "instructions": "Unlock Arjun's phone by cracking the 4-digit code. Rohan's note mentioned the year of independence (1947).",
+      "solution": "1947",
+      "reward": "EV-07"
+    },
+    {
+      "id": "puzzle-diary-cipher",
+      "title": "Rohan's Encrypted Log",
+      "type": "cipher",
+      "instructions": "Decrypt Rohan's diary log. It is a Caesar cipher shift 3 (Offset: 3).",
+      "data": {
+        "encoded": "DUKXQ LV VWHDOLQJ"
+      },
+      "solution": "arjun is stealing",
+      "reward": "EV-06"
+    }
+  ],
+  "timeline": [
+    {
+      "time": "7:00 PM",
+      "description": "Arjun enters lobby. CCTV log captures entrance."
+    },
+    {
+      "time": "8:30 PM",
+      "description": "Ravi delivers food drop to Rohan."
+    },
+    {
+      "time": "9:00 PM",
+      "description": "Neighbor Kavya Nair hears loud voices in the apartment."
+    },
+    {
+      "time": "9:15 PM",
+      "description": "Estimated time of fatal blow."
+    }
+  ],
+  "solution": {
+    "murderer": "arjun",
+    "weapon": "EV-01",
+    "method": "Single strike to head with brass bookend",
+    "motive": "Rohan discovered Arjun was stealing money",
+    "requiredEvidence": ["EV-01", "EV-03", "EV-04", "EV-05", "EV-10"]
+  },
+  "hints": [
+    "Check the balcony window glass shards. Did they fall inside or outside?",
+    "If Arjun was at the library, why is his secondary phone connected to home WiFi and dinner plates in the sink?",
+    "Examine lobby CCTV. Did Arjun ever leave Flat 302 after entering at 7:00 PM?",
+    "Compare the blood spots on the brass bookend with suspect samples.",
+    "Arjun killed Rohan over missing theft money and staged a window break-in."
+  ]
+}

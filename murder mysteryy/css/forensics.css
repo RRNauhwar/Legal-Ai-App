@@ -1,0 +1,310 @@
+/* ============================================================
+   NyayaSim Forensics Lab
+   ============================================================ */
+
+.forensics-view {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+/* Test List Panel */
+.forensics-list-panel {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.forensics-list-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.forensics-list-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.forensics-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.forensics-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  border: 1px solid transparent;
+}
+
+.forensics-item:hover {
+  background: var(--bg-hover);
+}
+
+.forensics-item.active {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(6, 182, 212, 0.2);
+}
+
+.forensics-item.completed {
+  opacity: 0.6;
+}
+
+.forensics-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+  background: rgba(6, 182, 212, 0.1);
+  color: var(--cyan);
+}
+
+.forensics-item-name {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.forensics-item-status {
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+/* Main Lab Area */
+.forensics-workspace {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-primary);
+}
+
+.forensics-workspace-header {
+  padding: var(--space-4) var(--space-6);
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.forensics-workspace-title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.forensics-workspace-desc {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.forensics-workspace-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Report Viewer */
+.forensic-report {
+  max-width: 700px;
+  width: 100%;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.report-header {
+  padding: var(--space-5) var(--space-6);
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.report-type {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+}
+
+.report-id {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+}
+
+.report-body {
+  padding: var(--space-6);
+}
+
+.report-field {
+  margin-bottom: var(--space-4);
+}
+
+.report-field-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  margin-bottom: var(--space-1);
+}
+
+.report-field-value {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+.report-field-value.highlight {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.report-field-value.danger {
+  color: var(--crimson-glow);
+  font-weight: 600;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--space-4) 0;
+}
+
+.report-table th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.report-table td {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.report-conclusion {
+  padding: var(--space-4) var(--space-5);
+  background: rgba(6, 182, 212, 0.05);
+  border: 1px solid rgba(6, 182, 212, 0.15);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-4);
+}
+
+.report-conclusion-title {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  margin-bottom: var(--space-2);
+}
+
+.report-conclusion-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* Fingerprint Comparison */
+.fingerprint-compare {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  max-width: 700px;
+  width: 100%;
+}
+
+.fingerprint-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  text-align: center;
+}
+
+.fingerprint-image {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto var(--space-4);
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-4xl);
+  border: 2px solid var(--border-default);
+}
+
+.fingerprint-label {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.fingerprint-source {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.match-result {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.match-result.match {
+  color: var(--emerald-glow);
+}
+
+.match-result.no-match {
+  color: var(--crimson-glow);
+}
+
+.match-result-text {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+}
+
+.match-percentage {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
