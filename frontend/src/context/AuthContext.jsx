@@ -46,6 +46,7 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('ns_user_name');
         localStorage.removeItem('ns_access_token');
       }
+      setLoading(false); // ← Fix: always clear loading after any auth state change
     });
     return () => subscription.unsubscribe();
   }, []);

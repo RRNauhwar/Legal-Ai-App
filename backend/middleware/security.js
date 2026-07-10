@@ -27,6 +27,7 @@ export function securityHeaders(req, res, next) {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=(self)');
   res.setHeader(
     'Content-Security-Policy',
@@ -46,18 +47,65 @@ export function securityHeaders(req, res, next) {
   next();
 }
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const token = req.headers.authorization?.replace(/^Bearer\s+/i, '');
 
   if (!token && process.env.REQUIRE_API_AUTH === 'true') {
     return res.status(401).json({ success: false, error: 'Authentication required', requestId: req.requestId });
   }
 
-  req.auth = {
-    userId: req.headers['x-demo-user-id'] || 'demo-user',
-    role: req.headers['x-demo-role'] || ROLES.STUDENT,
-    collegeId: req.headers['x-demo-college-id'] || null
-  };
+  let verifiedUser = null;
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (token && supabaseUrl && supabaseAnonKey) {
+    try {
+      const response = await fetch(`${supabaseUrl.replace(/\/$/, '')}/auth/v1/user`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': supabaseAnonKey
+        }
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        verifiedUser = {
+          userId: userData.id,
+          role: userData.user_metadata?.role || ROLES.STUDENT,
+          collegeId: userData.user_metadata?.collegeId || null
+        };
+      }
+    } catch (err) {
+      console.error('[auth] Supabase token verification failed:', err);
+    }
+  }
+
+  if (token && !verifiedUser && process.env.REQUIRE_API_AUTH === 'true') {
+    return res.status(401).json({ success: false, error: 'Invalid or expired authentication token', requestId: req.requestId });
+  }
+
+  if (verifiedUser) {
+    req.auth = verifiedUser;
+  } else {
+    // Determine if we should allow demo/unverified headers (only in development and if explicitly enabled)
+    const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+    const allowDemo = process.env.ALLOW_DEMO_HEADERS === 'true';
+
+    if (isDev && allowDemo) {
+      req.auth = {
+        userId: req.headers['x-demo-user-id'] || 'demo-user',
+        role: req.headers['x-demo-role'] || ROLES.STUDENT,
+        collegeId: req.headers['x-demo-college-id'] || null
+      };
+    } else {
+      // In production or safe mode, unverified requests are demoted to guest students.
+      // They cannot specify an arbitrary role.
+      req.auth = {
+        userId: req.headers['x-demo-user-id'] || 'guest-user',
+        role: ROLES.STUDENT,
+        collegeId: null
+      };
+    }
+  }
 
   return next();
 }

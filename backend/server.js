@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import logger from './services/logger.js';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,6 +11,8 @@ import roomRoutes from './routes/rooms.js';
 import communityRoutes from './routes/community.js';
 import ratingRoutes from './routes/ratings.js';
 import statRoutes from './routes/stats.js';
+import academyRoutes from './routes/academy.js';
+import academyCampaignRoutes from './routes/academyCampaign.js';
 import {
   auditLog,
   csrfGuard,
@@ -59,6 +62,8 @@ app.use('/api/rooms', auditLog('courtroom_room_activity'), roomRoutes);
 app.use('/api/community', auditLog('community_activity'), communityRoutes);
 app.use('/api/ratings', auditLog('rating_activity'), ratingRoutes);
 app.use('/api/stats', auditLog('stats_activity'), statRoutes);
+app.use('/api/academy', auditLog('academy_activity'), academyRoutes);
+app.use('/api/academy', auditLog('academy_campaign_activity'), academyCampaignRoutes);
 
 const healthPayload = () => ({
   ok: true, model: process.env.AI_MODEL || (process.env.OPENAI_API_KEY ? 'gpt-4o-mini' : 'gemini-2.5-flash'),
@@ -80,12 +85,12 @@ app.get('*', (req, res, next) => {
 app.use((err, req, res, next) => {
   const status = err.status || err.statusCode || 500;
   const safeMessage = status >= 500 ? 'Internal server error' : err.message;
-  console.error('[server]', { requestId: req.requestId, status, message: err.message });
+  logger.error(err.message, { requestId: req.requestId, status });
   res.status(status).json({ success: false, error: safeMessage, requestId: req.requestId });
 });
 
 app.listen(PORT, () => {
-  console.log(`⚖️  NyayaSim v2 — http://localhost:${PORT}`);
-  console.log(`   Model : ${process.env.AI_MODEL || (process.env.OPENAI_API_KEY ? 'gpt-4o-mini' : 'gemini-2.5-flash')}`);
-  console.log(`   AI    : ${process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY ? '✅ enabled' : '❌ offline mode only'}`);
+  logger.info(`⚖️  NyayaSim v2 — http://localhost:${PORT}`);
+  logger.info(`Model : ${process.env.AI_MODEL || (process.env.OPENAI_API_KEY ? 'gpt-4o-mini' : 'gemini-2.5-flash')}`);
+  logger.info(`AI    : ${process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.ANTHROPIC_API_KEY ? 'enabled' : 'offline mode only'}`);
 });

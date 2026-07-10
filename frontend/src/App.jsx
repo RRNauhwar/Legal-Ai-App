@@ -3,6 +3,7 @@ import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useAuth } from './context/AuthContext.jsx';
 import { api } from './utils/api.js';
+import CommandPalette from './components/CommandPalette.jsx';
 import AuthPage from './pages/AuthPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Cases from './pages/Cases.jsx';
@@ -220,6 +221,7 @@ export default function App() {
           }
         }}
       />
+      <CommandPalette />
     </div>
   );
 }

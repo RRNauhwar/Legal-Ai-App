@@ -1,7 +1,19 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import * as cs from '../services/claudeService.js';
 
 const router = express.Router();
+
+const aiLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 15, // Limit each IP to 15 requests per 5 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: 'AI limit reached. Please wait a few minutes before making more AI requests.' }
+});
+
+router.use(aiLimiter);
+
 const wrap = fn => async (req, res) => {
   try { res.json({ success: true, ...(await fn(req.body)) }); }
   catch (e) {
@@ -119,5 +131,49 @@ router.post('/precedents', wrap(async ({context,language='en'}) => {
   assertText(context, 'Context');
   return cs.getPrecedents(context, safeEnum(language, ['en', 'hi'], 'en'));
 }));
+
+router.post('/academy/tutor', wrap(async ({question, lessonContext, history}) => {
+  assertText(question, 'Question', 2000);
+  return { reply: await cs.askBeaksTutor(question, lessonContext, safeArray(history, 'History')) };
+}));
+
+router.get('/academy/tutor/stream', async (req, res) => {
+  try {
+    const { question, lessonContext, historyJson } = req.query;
+    
+    const parsedCtx = lessonContext ? JSON.parse(lessonContext) : {};
+    const parsedHistory = historyJson ? JSON.parse(historyJson) : [];
+    
+    const replyText = await cs.askBeaksTutor(question, parsedCtx, parsedHistory);
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const words = replyText.split(' ');
+    let currentIdx = 0;
+
+    const interval = setInterval(() => {
+      if (currentIdx < words.length) {
+        const chunk = words[currentIdx] + (currentIdx === words.length - 1 ? '' : ' ');
+        res.write(`data: ${JSON.stringify({ text: chunk })}\n\n`);
+        currentIdx++;
+      } else {
+        res.write('data: [DONE]\n\n');
+        clearInterval(interval);
+        res.end();
+      }
+    }, 45);
+
+    req.on('close', () => {
+      clearInterval(interval);
+    });
+
+  } catch (e) {
+    res.write(`data: ${JSON.stringify({ error: e.message })}\n\n`);
+    res.end();
+  }
+});
 
 export default router;

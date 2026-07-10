@@ -52,6 +52,14 @@ router.post('/posts', (req, res) => {
       return res.status(400).json({ success: false, error: 'Category, title, and content are required.' });
     }
 
+    if (title.length > 150) {
+      return res.status(400).json({ success: false, error: 'Title cannot exceed 150 characters.' });
+    }
+
+    if (content.length > 5000) {
+      return res.status(400).json({ success: false, error: 'Content cannot exceed 5000 characters.' });
+    }
+
     const newPost = db.insert('posts', {
       userId,
       userName,
@@ -127,6 +135,10 @@ router.post('/posts/:id/comments', (req, res) => {
 
     if (!content?.trim()) {
       return res.status(400).json({ success: false, error: 'Comment content cannot be empty.' });
+    }
+
+    if (content.length > 1000) {
+      return res.status(400).json({ success: false, error: 'Comment cannot exceed 1000 characters.' });
     }
 
     const post = db.findOne('posts', p => p.id === postId);

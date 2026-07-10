@@ -34,10 +34,49 @@ export default function Dashboard({ aiOnline }) {
 
   if (loading) {
     return (
-      <div style={{ display: 'grid', placeItems: 'center', minHeight: '50vh' }}>
-        <div className="flex items gap-2">
-          <span className="spin" />
-          Loading Command Center...
+      <div className="fade-up">
+        {/* Skeleton Header */}
+        <div className="pg-header" style={{ marginBottom: '2rem' }}>
+          <div>
+            <div className="skeleton skeleton-text title" style={{ width: '120px', height: '14px', marginBottom: '12px' }} />
+            <div className="skeleton skeleton-text title" style={{ width: '320px', height: '28px', marginBottom: '16px' }} />
+            <div className="skeleton skeleton-text" style={{ width: '480px', height: '14px' }} />
+          </div>
+        </div>
+
+        {/* Skeleton Stat Cards */}
+        <div className="g4 mb-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="stat-card premium-stat">
+              <div className="skeleton skeleton-text" style={{ width: '80px', height: '10px', marginBottom: '8px' }} />
+              <div className="skeleton skeleton-text" style={{ width: '120px', height: '36px', marginBottom: '8px' }} />
+              <div className="skeleton skeleton-text" style={{ width: '100px', height: '10px' }} />
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton Split Cards */}
+        <div className="g2 mb-3">
+          <div className="card-hi">
+            <div className="skeleton skeleton-text title" style={{ width: '150px', height: '18px', marginBottom: '16px' }} />
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} style={{ marginBottom: '16px' }}>
+                <div className="skeleton skeleton-text" style={{ width: '100px', height: '10px', marginBottom: '6px' }} />
+                <div className="skeleton skeleton-rect" style={{ height: '8px' }} />
+              </div>
+            ))}
+          </div>
+          <div className="card-hi">
+            <div className="skeleton skeleton-text title" style={{ width: '150px', height: '18px', marginBottom: '16px' }} />
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="list-card" style={{ height: '64px', marginBottom: '8px', cursor: 'default', background: 'var(--panel)' }}>
+                <div style={{ flex: 1 }}>
+                  <div className="skeleton skeleton-text" style={{ width: '150px', height: '12px', marginBottom: '6px' }} />
+                  <div className="skeleton skeleton-text short" style={{ height: '8px' }} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

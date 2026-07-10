@@ -1,6 +1,7 @@
 import express from 'express';
 import db from '../services/db.js';
 import { rooms } from './rooms.js'; // Import rooms Map to query active multiplayer rooms
+import { requireRole, ROLES } from '../middleware/security.js';
 
 const router = express.Router();
 
@@ -222,7 +223,7 @@ router.get('/active-rooms', (req, res) => {
 });
 
 // GET admin logs
-router.get('/admin/logs', (req, res) => {
+router.get('/admin/logs', requireRole(ROLES.ADMIN), (req, res) => {
   try {
     // Collect audits (or simulate live audit logs from DB)
     const logs = db.getCollection('audit_logs')

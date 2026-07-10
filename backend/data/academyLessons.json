@@ -1,0 +1,150 @@
+[
+  {
+    "id": "w1-l1",
+    "world": 1,
+    "worldTitle": "Courtroom Foundations",
+    "title": "Court Hierarchy & Ranks",
+    "difficulty": "easy",
+    "dialogue": [
+      "Welcome to World 1: Courtroom Foundations! I am Judge Beaks.",
+      "In India, the judiciary is structured like a pyramid.",
+      "At the very top sits the Supreme Court of India. Below are the regional High Courts, and at the bottom are the Subordinate/District Courts.",
+      "Jurisdiction depends on the territory and the financial/criminal severity of the matter."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "Which court occupies the absolute apex of the Indian Judicial System?",
+      "options": ["High Court of Delhi", "Supreme Court of India", "District Sessions Court", "National Green Tribunal"],
+      "correct": 1,
+      "explanation": "The Supreme Court of India is the apex court established under Article 124 of the Constitution."
+    }
+  },
+  {
+    "id": "w1-l2",
+    "world": 1,
+    "worldTitle": "Courtroom Foundations",
+    "title": "Addressing the Bench",
+    "difficulty": "easy",
+    "dialogue": [
+      "Excellent. Next, you must learn how to address the judges properly.",
+      "It is a sign of respect and protocol.",
+      "In the Supreme Court and High Courts of India, judges are addressed as 'My Lord' or 'Your Lordship' / 'Your Ladyship'.",
+      "In Subordinate and District Courts, address the judge as 'Your Honour'."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "If you are presenting arguments in a District Sessions Court, how should you address the presiding judge?",
+      "options": ["With 'My Lord'", "With 'Your Honour'", "With 'Hey Judge'", "With 'Sir/Madam'"],
+      "correct": 1,
+      "explanation": "By convention, subordinate court judges are addressed as 'Your Honour'."
+    }
+  },
+  {
+    "id": "w2-l1",
+    "world": 2,
+    "worldTitle": "Criminal Law",
+    "title": "Filing the FIR (S.154 CrPC)",
+    "difficulty": "intermediate",
+    "dialogue": [
+      "Let's move to World 2: Criminal Law! How does a case start?",
+      "Under Section 154 of the Criminal Procedure Code (CrPC), a First Information Report (FIR) is registered for cognizable offences.",
+      "An FIR is just information given to the police to start their investigation. It is not substantive proof in itself."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "Which of the following is true regarding an FIR under Section 154 CrPC?",
+      "options": [
+        "It constitutes substantive proof of guilt.",
+        "It is registered only for non-cognizable offences.",
+        "It is the information that sets the police investigation in motion.",
+        "It must be signed by a magistrate to be active."
+      ],
+      "correct": 2,
+      "explanation": "An FIR is information of a cognizable offence given to the police to trigger the investigation machinery."
+    }
+  },
+  {
+    "id": "w2-l2",
+    "world": 2,
+    "worldTitle": "Criminal Law",
+    "title": "Arrest Procedures & Rights",
+    "difficulty": "intermediate",
+    "dialogue": [
+      "When someone is arrested, Article 22 of the Constitution safeguards their rights.",
+      "They must be informed of the grounds of arrest, have the right to consult a lawyer, and must be produced before a magistrate within 24 hours."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "What is the maximum duration an arrested person can be kept in police custody before being produced before a magistrate?",
+      "options": ["12 hours", "24 hours (excluding travel time)", "48 hours", "7 days"],
+      "correct": 1,
+      "explanation": "Article 22(2) mandates production before a magistrate within 24 hours of arrest, excluding travel time."
+    }
+  },
+  {
+    "id": "w3-l1",
+    "world": 3,
+    "worldTitle": "Civil Law",
+    "title": "Pleadings: Plaint & Written Statement",
+    "difficulty": "intermediate",
+    "dialogue": [
+      "Welcome to World 3: Civil Law. Civil disputes begin with pleadings.",
+      "The plaintiff files a 'Plaint' detailing their claims and facts.",
+      "The defendant replies with a 'Written Statement' defending themselves. Order VI of the Civil Procedure Code (CPC) governs pleadings."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "Under the CPC, the defendant responds to the plaintiff's plaint by filing which of the following?",
+      "options": ["A Counter-Claim Plaint", "A Written Statement", "An Affidavit of Injunction", "A Legal Notice of Default"],
+      "correct": 1,
+      "explanation": "The Written Statement is the defendant's formal response pleading, governed by Order VIII CPC."
+    }
+  },
+  {
+    "id": "w4-l1",
+    "world": 4,
+    "worldTitle": "Constitutional Law",
+    "title": "Writ Petitions: Art. 32 vs 226",
+    "difficulty": "advanced",
+    "dialogue": [
+      "In World 4, we examine fundamental rights challenges.",
+      "Article 32 allows citizens to approach the Supreme Court directly for violation of Fundamental Rights.",
+      "Article 226 gives High Courts the power to issue writs for both Fundamental Rights and other legal rights. The High Court's writ jurisdiction is actually wider than the Supreme Court's!"
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "Which court possesses a wider writ jurisdiction under the Indian Constitution?",
+      "options": [
+        "Supreme Court of India (Article 32)",
+        "High Courts (Article 226)",
+        "Both have identical writ powers",
+        "District Sessions Courts"
+      ],
+      "correct": 1,
+      "explanation": "High Courts can issue writs for both Fundamental Rights and ordinary legal rights, whereas Article 32 is limited only to Fundamental Rights."
+    }
+  },
+  {
+    "id": "w5-l1",
+    "world": 5,
+    "worldTitle": "Evidence Law",
+    "title": "The Rule of Hearsay",
+    "difficulty": "advanced",
+    "dialogue": [
+      "World 5 is about evidence. Direct evidence is the gold standard.",
+      "Hearsay refers to out-of-court statements reported by a witness who did not witness the event directly. Under Section 60 of the Evidence Act, oral evidence must be direct."
+    ],
+    "exercise": {
+      "type": "mcq",
+      "question": "A witness states: 'My brother told me he saw the accused strike the victim.' Is this admissible?",
+      "options": [
+        "Yes, it is direct eyewitness testimony.",
+        "No, it is inadmissible hearsay since the witness did not see it himself.",
+        "Yes, if the brother is out of the country.",
+        "Yes, under Section 32 (dying declaration)."
+      ],
+      "correct": 1,
+      "explanation": "This is hearsay because the testifying witness is repeating another person's observation. It is inadmissible under Section 60."
+    }
+  }
+]

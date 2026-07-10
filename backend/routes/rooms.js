@@ -92,6 +92,11 @@ router.post('/create', (req, res) => {
       defense: null,
       observer: []
     },
+    seatUsers: {
+      judge: null,
+      prosecution: null,
+      defense: null
+    },
     messages: []
   };
 
@@ -112,12 +117,15 @@ router.post('/:id/join', (req, res) => {
   const { seat, participantName } = req.body;
   if (!seat || !participantName) return res.status(400).json({ success: false, error: 'Seat and participant name are required' });
 
+  const userId = req.auth?.userId || 'demo-user';
+
   if (seat === 'observer') {
     if (!room.seats.observer.includes(participantName)) room.seats.observer.push(participantName);
   } else if (room.seats[seat] && room.seats[seat] !== participantName) {
     return res.status(409).json({ success: false, error: 'Seat already occupied' });
   } else {
     room.seats[seat] = participantName;
+    room.seatUsers[seat] = userId;
   }
 
   addMessage(room, 'sys', 'Court', `${participantName} joined the room as ${seat}.`);
@@ -127,6 +135,16 @@ router.post('/:id/join', (req, res) => {
 router.post('/:id/start', async (req, res) => {
   const room = rooms.get(req.params.id.toUpperCase());
   if (!room) return res.status(404).json({ success: false, error: 'Room not found' });
+
+  const userId = req.auth?.userId;
+  const isParticipant =
+    (room.seatUsers.judge === userId) ||
+    (room.seatUsers.prosecution === userId) ||
+    (room.seatUsers.defense === userId);
+
+  if (!isParticipant) {
+    return res.status(403).json({ success: false, error: 'Only assigned counsel/judge can start the session' });
+  }
 
   if (!room.started) {
     room.started = true;
@@ -154,6 +172,15 @@ router.post('/:id/turn', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Seat, participant name, and message are required' });
   }
 
+  const userId = req.auth?.userId;
+
+  // Enforce seat ownership
+  if (seat !== 'observer') {
+    if (room.seats[seat] !== participantName || room.seatUsers[seat] !== userId) {
+      return res.status(403).json({ success: false, error: 'You do not occupy this seat' });
+    }
+  }
+
   addMessage(room, seat, participantName, message.trim());
   await maybeGenerateAIResponse(room, seat, message.trim());
 
@@ -163,6 +190,21 @@ router.post('/:id/turn', async (req, res) => {
 router.post('/:id/judgment', async (req, res) => {
   const room = rooms.get(req.params.id.toUpperCase());
   if (!room) return res.status(404).json({ success: false, error: 'Room not found' });
+
+  const userId = req.auth?.userId;
+
+  // Enforce judgment permissions
+  if (room.seats.judge) {
+    if (room.seatUsers.judge !== userId) {
+      return res.status(403).json({ success: false, error: 'Only the Judge can deliver judgment' });
+    }
+  } else {
+    const isProsecution = room.seatUsers.prosecution === userId;
+    const isDefense = room.seatUsers.defense === userId;
+    if (!isProsecution && !isDefense) {
+      return res.status(403).json({ success: false, error: 'Only active counsel can trigger judgment' });
+    }
+  }
 
   const prosPoints = room.messages.filter((message) => message.type === 'prosecution').map((message) => message.content);
   const defPoints = room.messages.filter((message) => message.type === 'defense').map((message) => message.content);

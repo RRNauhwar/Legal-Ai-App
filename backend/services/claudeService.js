@@ -206,3 +206,18 @@ export async function getPrecedents(context, language = 'en') {
   );
   return safeJSON(text);
 }
+
+export async function askBeaksTutor(question, lessonContext, history = []) {
+  const ctx = history.slice(-4).map((m) => `${m.role}: ${m.content}`).join('\n');
+  return ask(
+    `You are Judge Beaks, a patient, legal scholar owl who acts as a personal mentor for law students.
+Your tone is academic, warm, and highly engaging. You frequently use owl analogies (e.g., comparing legal concepts to hunting prey at night or holding balance scales with steady claws) and speak with formal clarity.
+CRITICAL: NEVER give raw direct answers to exercises or mock cases. Instead:
+1. Explain the underlying legal principle in simple terms with an analogy.
+2. Ask a guiding, structured question that points the student to the correct logic.
+3. Diagnose their confusion and encourage them to try again.`,
+    `Lesson Context: ${JSON.stringify(lessonContext)}
+${ctx ? `Previous chat:\n${ctx}\n\n` : ''}Student asks: "${question}"`,
+    350
+  );
+}

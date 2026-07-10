@@ -93,6 +93,16 @@ export const api = {
   savePerformance: (performanceData) => req('/stats/performances', { method: 'POST', body: JSON.stringify(performanceData) }),
   getAdminLogs: () => req('/stats/admin/logs'),
   getActiveRooms: () => req('/stats/active-rooms'),
+
+  // Academy
+  getAcademyProgress: () => req('/academy/progress'),
+  updateAcademySpecialization: (specialization) => req('/academy/progress/specialization', { method: 'POST', body: JSON.stringify({ specialization }) }),
+  getAcademyLessons: () => req('/academy/lessons'),
+  completeAcademyLesson: (lessonId, body) => req(`/academy/lessons/${lessonId}/complete`, { method: 'POST', body: JSON.stringify(body) }),
+  askAcademyTutor: (question, lessonContext, history) => req('/ai/academy/tutor', { method: 'POST', body: JSON.stringify({ question, lessonContext, history }) }),
+  getAcademyCampaign: () => req('/academy/campaign'),
+  promoteAcademyCampaign: () => req('/academy/campaign/promote', { method: 'POST' }),
+  getAcademyAnalyticsSummary: () => req('/academy/analytics/summary'),
 };
 
 export default api;

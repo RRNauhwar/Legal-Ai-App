@@ -1,5 +1,6 @@
 import express from 'express';
 import { v4 as uuid } from 'uuid';
+import { ROLES } from '../middleware/security.js';
 const router = express.Router();
 export const store = new Map();
 
@@ -257,12 +258,32 @@ router.get('/:id', (req,res) => {
   if(!c) return res.status(404).json({error:'Case not found'});
   res.json({success:true,case:c});
 });
-router.post('/', (req,res) => {
+router.post('/', (req, res) => {
   const id = req.body.id || uuid();
-  const c = {...req.body,id,createdAt:new Date().toISOString()};
-  store.set(id,c);
-  res.status(201).json({success:true,case:c});
+  const c = { ...req.body, id, creatorId: req.auth?.userId, createdAt: new Date().toISOString() };
+  store.set(id, c);
+  res.status(201).json({ success: true, case: c });
 });
-router.delete('/:id', (req,res) => { store.delete(req.params.id); res.json({success:true}); });
+
+router.delete('/:id', (req, res) => {
+  const caseId = req.params.id;
+  const c = store.get(caseId);
+  if (!c) return res.status(404).json({ error: 'Case not found' });
+
+  // Prevent deleting default offline cases
+  if (caseId.startsWith('offline-')) {
+    return res.status(403).json({ error: 'Cannot delete default offline cases' });
+  }
+
+  // Allow deletion only by creator or admin
+  const userId = req.auth?.userId;
+  const isAdmin = req.auth?.role === ROLES.ADMIN;
+  if (c.creatorId && c.creatorId !== userId && !isAdmin) {
+    return res.status(403).json({ error: 'Unauthorized to delete this case' });
+  }
+
+  store.delete(caseId);
+  res.json({ success: true });
+});
 
 export default router;
