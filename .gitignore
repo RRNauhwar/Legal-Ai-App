@@ -44,3 +44,6 @@ android/build/
 android/app/build/
 android/local.properties
 android/**/*.iml
+
+# Project Brain Documentation
+brain.md
