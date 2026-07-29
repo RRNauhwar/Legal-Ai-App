@@ -34,6 +34,10 @@ class JSONDatabase {
     if (fs.existsSync(DB_FILE)) {
       try {
         const content = fs.readFileSync(DB_FILE, 'utf8');
+        if (!content.trim()) {
+          this.persistAsync();
+          return;
+        }
         const parsed = JSON.parse(content);
         this.data = {
           performances: parsed.performances || [],
@@ -48,6 +52,7 @@ class JSONDatabase {
         };
       } catch (e) {
         console.error('[db] Error reading database file, using fallback empty state:', e);
+        this.persistAsync();
       }
     } else {
       this.persistAsync();
