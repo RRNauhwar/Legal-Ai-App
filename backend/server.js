@@ -49,7 +49,7 @@ app.use(cors({
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '2mb', strict: true }));
 app.use('/api/', rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 60000,
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 20,
+  max: process.env.NODE_ENV === 'development' ? 1000 : (parseInt(process.env.RATE_LIMIT_MAX) || 20),
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please wait a moment.' }

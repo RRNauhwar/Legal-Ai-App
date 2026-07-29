@@ -303,15 +303,6 @@ p { color: rgba(250,248,244,0.55); line-height: 1.7; }
 }
 .btn:disabled, .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.btn-primary {
-  background: var(--gold); color: var(--navy);
-  padding: 12px 28px;
-}
-.btn-primary:hover:not(:disabled) {
-  background: var(--gold-light);
-  transform: translateY(-1px);
-}
-
 .btn-outline, .btn {
   border: 1px solid rgba(250,248,244,0.2); color: var(--white);
   padding: 12px 28px;
@@ -320,6 +311,15 @@ p { color: rgba(250,248,244,0.55); line-height: 1.7; }
 .btn-outline:hover:not(:disabled), .btn:hover:not(:disabled) {
   border-color: var(--gold);
   background: rgba(201,168,76,0.06);
+}
+
+.btn-primary {
+  background: var(--gold); color: var(--navy);
+  padding: 12px 28px;
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--gold-light);
+  transform: translateY(-1px);
 }
 
 .btn-ghost {

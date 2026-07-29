@@ -5,8 +5,8 @@ import * as cs from '../services/claudeService.js';
 const router = express.Router();
 
 const aiLimiter = rateLimit({
-  windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 15, // Limit each IP to 15 requests per 5 minutes
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 5 * 60 * 1000, // 5 minutes default
+  max: process.env.NODE_ENV === 'development' ? 1000 : (parseInt(process.env.RATE_LIMIT_MAX) || 15),
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'AI limit reached. Please wait a few minutes before making more AI requests.' }
