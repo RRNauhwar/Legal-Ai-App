@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { api } from '../utils/api.js';
 import { useVoice } from '../hooks/useVoice.js';
-import { useSpeechPlayback } from '../hooks/useSpeechPlayback.js';
+import { useSpeechPlayback, playGavel, detectGender } from '../hooks/useSpeechPlayback.js';
 
 // Inline component to format messages with simple markdown bold (**text**) and paragraphs
 export function FormattedMessage({ text }) {
@@ -52,6 +52,16 @@ const ROOM_SEATS = [
 
 const OBJECTIONS = ['Leading Question', 'Hearsay', 'Irrelevant', 'Speculative', 'Harassing the Witness'];
 
+export const OPPONENT_PERSONAS = [
+  { id: 'ananya', name: 'Adv. Ananya Deshmukh', gender: 'female', title: 'Senior Counsel', avatar: '👩‍💼', desc: 'Sharp, constitutional litigator with precise statutory citations.' },
+  { id: 'vikram', name: 'Adv. Vikram Singhania', gender: 'male', title: 'Senior Advocate', avatar: '👨‍💼', desc: 'Aggressive trial advocate specializing in forensic doubts & cross-examination.' }
+];
+
+export const JUDGE_PERSONAS = [
+  { id: 'rohini', name: 'Hon’ble Justice Rohini Sen', gender: 'female', title: 'High Court Bench', avatar: '👩‍⚖️', desc: 'Inquisitive and firm on evidentiary rules and statutory adherence.' },
+  { id: 'sharma', name: 'Hon’ble Justice D.K. Sharma', gender: 'male', title: 'Sessions Presiding Officer', avatar: '👨‍⚖️', desc: 'Formal, patient judicial officer focused on procedural fairness.' }
+];
+
 export default function Courtroom({ aiOnline }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,6 +69,9 @@ export default function Courtroom({ aiOnline }) {
   const [phase, setPhase] = useState('setup'); // 'setup' | 'trial' | 'judgment' | 'report'
   const [sessionMode, setSessionMode] = useState('single'); // 'single' | 'multiplayer'
   const [role, setRole] = useState('prosecution'); // 'prosecution' | 'defense' | 'observer'
+  const [selectedOpponent, setSelectedOpponent] = useState(OPPONENT_PERSONAS[0]);
+  const [selectedJudge, setSelectedJudge] = useState(JUDGE_PERSONAS[0]);
+  const [turnState, setTurnState] = useState('user_turn'); // 'user_turn' | 'opposing_turn' | 'judge_turn' | 'witness_turn' | 'objection_turn'
   const [caseData, setCaseData] = useState(location.state?.selectedCase || null);
   const [guidanceMode, setGuidanceMode] = useState(true);
 
@@ -298,6 +311,10 @@ export default function Courtroom({ aiOnline }) {
     }
 
     setPhase('trial');
+    setTurnState('judge_turn');
+
+    // Judicial gavel strikes to open the court
+    playGavel();
 
     // System details opening
     addMsg('sys', 'Court', '— IN THE SESSIONS COURT OF INDIA —');
@@ -306,28 +323,30 @@ export default function Courtroom({ aiOnline }) {
     setAiLoading(true);
     try {
       const opening = aiOnline
-        ? (await api.judgeRespond([], `Open proceedings in ${caseData.title}. Both counsels will argue at length.`).catch(() => ({ response: caseData.offlineJudgeResponses?.default })))
+        ? (await api.judgeRespond([], `Open formal court proceedings in ${caseData.title}. Both counsels will argue at length. Call upon counsels to begin.`).catch(() => ({ response: caseData.offlineJudgeResponses?.default })))
         : { response: caseData.offlineJudgeResponses?.default };
       
-      addMsg('judge', 'AI Judge', opening.response);
-      playVoice(opening.response, 'judge');
+      addMsg('judge', selectedJudge.name, opening.response);
+      playVoice(opening.response, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: true });
 
       // AI Prosecution goes first if user is defense in single-player
       if (role === 'defense') {
+        setTurnState('opposing_turn');
         const prosecutionSeed = caseData.prosecutionArguments?.[0] || 'The prosecution submits that the accused is guilty beyond reasonable doubt.';
         let prosArgument = prosecutionSeed;
         if (aiOnline) {
-          prosArgument = (await api.lawyerRespond(caseData.title, caseData.summary, [], prosecutionSeed, 'prosecution').catch(() => ({ response: prosecutionSeed }))).response;
+          prosArgument = (await api.lawyerRespond(caseData.title, caseData.summary + ` | Counsel: ${selectedOpponent.name} (${selectedOpponent.gender})`, [], prosecutionSeed, 'prosecution').catch(() => ({ response: prosecutionSeed }))).response;
         }
-        addMsg('prosecution', 'AI opposing counsel', prosArgument);
-        playVoice(prosArgument, 'prosecution');
+        addMsg('prosecution', selectedOpponent.name, prosArgument);
+        playVoice(prosArgument, 'prosecution', { gender: selectedOpponent.gender, name: selectedOpponent.name, interrupt: false });
       }
     } catch {
       const fallback = caseData.offlineJudgeResponses?.default || 'The court is now in session.';
-      addMsg('judge', 'AI Judge', fallback);
-      playVoice(fallback, 'judge');
+      addMsg('judge', selectedJudge.name, fallback);
+      playVoice(fallback, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: true });
     } finally {
       setAiLoading(false);
+      setTurnState('user_turn');
     }
   }
 
@@ -341,38 +360,43 @@ export default function Courtroom({ aiOnline }) {
     async function step() {
       if (!observerRunning) return;
       try {
+        setTurnState('opposing_turn');
         // AI Prosecution submits
         const prosSeed = caseData.prosecutionArguments?.[history.length % (caseData.prosecutionArguments?.length || 1)];
         const prosArg = aiOnline
-          ? (await api.lawyerRespond(caseData.title, caseData.summary, history, prosSeed, 'prosecution')).response
+          ? (await api.lawyerRespond(caseData.title, caseData.summary + ` | Counsel: ${selectedOpponent.name}`, history, prosSeed, 'prosecution')).response
           : prosSeed;
         
-        addMsg('prosecution', 'AI Prosecution', prosArg);
-        playVoice(prosArg, 'prosecution');
-        history.push({ role: 'user', content: `AI Prosecution: ${prosArg}` });
+        addMsg('prosecution', selectedOpponent.name, prosArg);
+        playVoice(prosArg, 'prosecution', { gender: selectedOpponent.gender, name: selectedOpponent.name, interrupt: false });
+        history.push({ role: 'user', content: `${selectedOpponent.name}: ${prosArg}` });
 
-        await new Promise(r => setTimeout(r, 6000));
+        await new Promise(r => setTimeout(r, 6500));
 
-        // AI Defense counters
+        // AI Defense counters (use second persona or complementary gender)
         const defSeed = caseData.defenseArguments?.[history.length % (caseData.defenseArguments?.length || 1)];
+        const defCounselName = selectedOpponent.gender === 'female' ? 'Adv. Vikram Singhania' : 'Adv. Ananya Deshmukh';
+        const defCounselGender = selectedOpponent.gender === 'female' ? 'male' : 'female';
+        
         const defArg = aiOnline
-          ? (await api.lawyerRespond(caseData.title, caseData.summary, history, defSeed, 'defense')).response
+          ? (await api.lawyerRespond(caseData.title, caseData.summary + ` | Counsel: ${defCounselName}`, history, defSeed, 'defense')).response
           : defSeed;
         
-        addMsg('defense', 'AI Defense', defArg);
-        playVoice(defArg, 'defense');
-        history.push({ role: 'user', content: `AI Defense: ${defArg}` });
+        addMsg('defense', defCounselName, defArg);
+        playVoice(defArg, 'defense', { gender: defCounselGender, name: defCounselName, interrupt: false });
+        history.push({ role: 'user', content: `${defCounselName}: ${defArg}` });
 
-        await new Promise(r => setTimeout(r, 6000));
+        await new Promise(r => setTimeout(r, 6500));
 
         // AI Judge intervenes
+        setTurnState('judge_turn');
         const judgeText = aiOnline
-          ? (await api.judgeRespond(history.slice(-4), `Counsel has argued. Give a realistic judicial comment.`)).response
+          ? (await api.judgeRespond(history.slice(-4), `Counsels have argued. As ${selectedJudge.name} (${selectedJudge.gender}), give a realistic judicial comment or question.`)).response
           : caseData.offlineJudgeResponses?.default;
         
-        addMsg('judge', 'AI Judge', judgeText);
-        playVoice(judgeText, 'judge');
-        history.push({ role: 'assistant', content: `AI Judge: ${judgeText}` });
+        addMsg('judge', selectedJudge.name, judgeText);
+        playVoice(judgeText, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: false });
+        history.push({ role: 'assistant', content: `${selectedJudge.name}: ${judgeText}` });
 
         await new Promise(r => setTimeout(r, 8000));
         
@@ -390,7 +414,7 @@ export default function Courtroom({ aiOnline }) {
 
     observerLoopRef.current = setTimeout(step, 1500);
     return () => clearTimeout(observerLoopRef.current);
-  }, [phase, role, sessionMode]);
+  }, [phase, role, sessionMode, selectedOpponent, selectedJudge]);
 
   async function submitArgument(overrideText) {
     const text = (overrideText || argText).trim();
@@ -425,35 +449,46 @@ export default function Courtroom({ aiOnline }) {
       .map((m) => ({ role: m.type === 'judge' ? 'assistant' : 'user', content: `${m.speaker}: ${m.content}` }));
     newHist.push({ role: 'user', content: `${displayName}: ${text}` });
 
+    setTurnState('opposing_turn');
     setAiLoading(true);
+
     try {
       const oppSide = role === 'prosecution' ? 'defense' : 'prosecution';
-      const oppSeed = caseData.defenseArguments?.[userArgs.length % (caseData.defenseArguments?.length || 1)] || 'The defense denies these allegations.';
+      const oppSeed = (oppSide === 'defense' ? caseData.defenseArguments : caseData.prosecutionArguments)?.[userArgs.length % ((oppSide === 'defense' ? caseData.defenseArguments : caseData.prosecutionArguments)?.length || 1)] || 'The defense denies these allegations.';
       
       const oppArg = aiOnline
-        ? (await api.lawyerRespond(caseData.title, caseData.summary + ` | Counsel Style: ${aiStyle}`, newHist.slice(-6), text, oppSide, language)).response
+        ? (await api.lawyerRespond(caseData.title, caseData.summary + ` | Counsel: ${selectedOpponent.name} (${selectedOpponent.gender}) | Style: ${aiStyle}`, newHist.slice(-6), text, oppSide, language)).response
         : oppSeed;
 
-      addMsg(oppSide, `AI opposing counsel`, oppArg);
-      playVoice(oppArg, oppSide);
-      newHist.push({ role: 'user', content: `AI opposing counsel: ${oppArg}` });
+      addMsg(oppSide, selectedOpponent.name, oppArg);
+      // Play opposing counsel voice sequentially
+      playVoice(oppArg, oppSide, { gender: selectedOpponent.gender, name: selectedOpponent.name, interrupt: false });
+      newHist.push({ role: 'user', content: `${selectedOpponent.name}: ${oppArg}` });
 
-      setJudgeLoading(true);
-      const judgePrompt = `Counsels have argued. Prosecution or defense has submitted: "${text}". Opposite counsel counter-argued: "${oppArg}". Offer a brief judicial intervention.`;
-      
-      const judgeArg = aiOnline
-        ? (await api.judgeRespond(newHist.slice(-4), judgePrompt, language)).response
-        : caseData.offlineJudgeResponses?.default;
+      // Judicial intervention every 2nd round or after several arguments
+      const roundCount = userArgs.length + 1;
+      const shouldJudgeIntervene = roundCount === 1 || roundCount % 2 === 0;
 
-      addMsg('judge', 'AI Judge', judgeArg);
-      playVoice(judgeArg, 'judge');
+      if (shouldJudgeIntervene) {
+        setTurnState('judge_turn');
+        setJudgeLoading(true);
+        const judgePrompt = `Counsels have argued. ${role} counsel submitted: "${text}". Opposite counsel counter-argued: "${oppArg}". As ${selectedJudge.name} (${selectedJudge.gender}), offer a concise judicial direction, observation, or question.`;
+        
+        const judgeArg = aiOnline
+          ? (await api.judgeRespond(newHist.slice(-4), judgePrompt, language)).response
+          : caseData.offlineJudgeResponses?.default;
+
+        addMsg('judge', selectedJudge.name, judgeArg);
+        playVoice(judgeArg, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: false });
+      }
     } catch {
       const fallback = caseData.offlineJudgeResponses?.default || 'The Court notes your argument. Proceed.';
-      addMsg('judge', 'AI Judge', fallback);
-      playVoice(fallback, 'judge');
+      addMsg('judge', selectedJudge.name, fallback);
+      playVoice(fallback, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: false });
     } finally {
       setAiLoading(false);
       setJudgeLoading(false);
+      setTurnState('user_turn');
     }
   }
 
@@ -464,10 +499,16 @@ export default function Courtroom({ aiOnline }) {
     // Stop recording if active
     if (voice.listening) voice.stop();
 
+    // Immediately stop current audio playback and strike judicial gavel
+    stopPlayback(true);
+    playGavel();
+
+    setTurnState('objection_turn');
+
     const ctx = messages.slice(-2).map((m) => `${m.speaker}: ${m.content}`).join('\n');
     setUserObjs((prev) => [...prev, type]);
 
-    addMsg('sys', 'Court', `${displayName} objects: "${type}"`);
+    addMsg('sys', 'Court', `⚡ ${displayName} objects: "${type}"`);
     setAiLoading(true);
 
     try {
@@ -475,13 +516,27 @@ export default function Courtroom({ aiOnline }) {
         ? await api.handleObjection(type, ctx, sessionMode === 'multiplayer' ? roomSeat : role) 
         : { ruling: caseData.offlineJudgeResponses?.objection_hearsay || 'Objection Sustained.', sustained: true };
 
-      addMsg('judge', 'AI Judge', result.ruling);
-      playVoice(result.ruling, 'judge');
+      addMsg('judge', selectedJudge.name, result.ruling);
+      playVoice(result.ruling, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: true });
+
+      // If sustained, opposing counsel immediately yields floor
+      if (result.sustained) {
+        setTimeout(() => {
+          const concession = selectedOpponent.gender === 'female'
+            ? 'My apologies, Your Honor. Withdrawing the line of submission.'
+            : 'Apologies to the Court. Withdrawing the statement.';
+          const oppSide = role === 'prosecution' ? 'defense' : 'prosecution';
+          addMsg(oppSide, selectedOpponent.name, concession);
+          playVoice(concession, oppSide, { gender: selectedOpponent.gender, name: selectedOpponent.name, interrupt: false });
+        }, 1100);
+      }
     } catch {
-      addMsg('judge', 'AI Judge', 'Objection OVERRULED. Counsel, proceed.');
-      playVoice('Objection OVERRULED. Counsel, proceed.', 'judge');
+      const fallback = 'Objection OVERRULED. Counsel, proceed.';
+      addMsg('judge', selectedJudge.name, fallback);
+      playVoice(fallback, 'judge', { gender: selectedJudge.gender, name: selectedJudge.name, interrupt: true });
     } finally {
       setAiLoading(false);
+      setTimeout(() => setTurnState('user_turn'), 1800);
     }
   }
 
@@ -509,23 +564,28 @@ export default function Courtroom({ aiOnline }) {
 
     const q = witnessQ.trim();
     setWitnessQ('');
-    addMsg(role, displayName, `To witness: ${q}`);
+    addMsg(role, displayName, `[To Witness ${activeWitness.name}]: ${q}`);
 
     setWitnessLoading(true);
+    setTurnState('witness_turn');
     const newHist = [...wHistory, { role: 'user', content: q }];
     try {
       const answer = aiOnline
         ? (await api.witnessAnswer(activeWitness, q, newHist.slice(-6))).answer
         : activeWitness.testimony;
 
+      const witGender = detectGender({ name: activeWitness.name, role: activeWitness.role, text: activeWitness.testimony });
+
       addMsg('witness', activeWitness.name, answer);
-      playVoice(answer, 'witness');
+      playVoice(answer, 'witness', { gender: witGender, name: activeWitness.name, interrupt: false });
       setWHistory([...newHist, { role: 'assistant', content: answer }]);
     } catch {
+      const witGender = detectGender({ name: activeWitness.name, role: activeWitness.role, text: activeWitness.testimony });
       addMsg('witness', activeWitness.name, activeWitness.testimony);
-      playVoice(activeWitness.testimony, 'witness');
+      playVoice(activeWitness.testimony, 'witness', { gender: witGender, name: activeWitness.name, interrupt: false });
     } finally {
       setWitnessLoading(false);
+      setTurnState('user_turn');
     }
   }
 
@@ -797,10 +857,77 @@ export default function Courtroom({ aiOnline }) {
               <div className="assistant-card mt-2">
                 <div className="eyebrow">Observer upgrade</div>
                 <div className="text-sm" style={{ color: 'var(--prose)', marginTop: '.55rem' }}>
-                  Observer mode now runs a longer AI-led courtroom hearing. You can study how prosecution and defense build arguments, how the judge intervenes, and how the case develops.
+                  Observer mode runs an AI-led hearing. Study oral litigation, objections, and bench decisions.
                 </div>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Courtroom Personas & Voice Selection */}
+        <div className="card-hi mb-3 mt-3">
+          <div className="flex between items mb-1">
+            <div>
+              <div className="eyebrow">Bench & Opposing Personas</div>
+              <div className="text-sm text-muted">Select gender, persona, and voice profile for your trial.</div>
+            </div>
+            <span className="badge badge-gold">🔊 Gender Voice Sync Active</span>
+          </div>
+
+          <div className="g2 mt-2">
+            {/* Opponent Selector */}
+            <div className="card" style={{ padding: '0.85rem' }}>
+              <div className="text-xs mono text-muted mb-1">OPPOSING COUNSEL PERSONA</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {OPPONENT_PERSONAS.map((p) => {
+                  const isSel = selectedOpponent.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedOpponent(p)}
+                      className={isSel ? 'card-gold' : 'card'}
+                      style={{ padding: '0.6rem 0.8rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem' }}
+                    >
+                      <span style={{ fontSize: '1.6rem' }}>{p.avatar}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: 'var(--cream)', fontSize: '0.85rem' }}>
+                          {p.name} <span className={`badge ${p.gender === 'female' ? 'badge-red' : 'badge-blue'}`} style={{ fontSize: '0.65rem' }}>{p.gender === 'female' ? 'Female Voice' : 'Male Voice'}</span>
+                        </div>
+                        <div className="text-xs text-muted" style={{ marginTop: '0.15rem' }}>{p.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Judge Selector */}
+            <div className="card" style={{ padding: '0.85rem' }}>
+              <div className="text-xs mono text-muted mb-1">PRESIDING JUDGE PERSONA</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {JUDGE_PERSONAS.map((j) => {
+                  const isSel = selectedJudge.id === j.id;
+                  return (
+                    <button
+                      key={j.id}
+                      type="button"
+                      onClick={() => setSelectedJudge(j)}
+                      className={isSel ? 'card-gold' : 'card'}
+                      style={{ padding: '0.6rem 0.8rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.6rem' }}
+                    >
+                      <span style={{ fontSize: '1.6rem' }}>{j.avatar}</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, color: 'var(--cream)', fontSize: '0.85rem' }}>
+                          {j.name} <span className={`badge ${j.gender === 'female' ? 'badge-gold' : 'badge-blue'}`} style={{ fontSize: '0.65rem' }}>{j.gender === 'female' ? 'Female Voice' : 'Male Voice'}</span>
+                        </div>
+                        <div className="text-xs text-muted" style={{ marginTop: '0.15rem' }}>{j.desc}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -918,10 +1045,13 @@ export default function Courtroom({ aiOnline }) {
   }
 
   const getAvatarChar = (msg) => {
-    if (msg.type === 'judge') return '⚖️';
-    if (msg.type === 'prosecution') return '🏛️';
-    if (msg.type === 'defense') return '🛡️';
-    if (msg.type === 'witness') return '👤';
+    if (msg.type === 'judge') return selectedJudge.avatar || '⚖️';
+    if (msg.type === 'prosecution') return (role === 'prosecution' || roomSeat === 'prosecution') ? '🏛️' : selectedOpponent.avatar;
+    if (msg.type === 'defense') return (role === 'defense' || roomSeat === 'defense') ? '🛡️' : selectedOpponent.avatar;
+    if (msg.type === 'witness') {
+      const witGender = detectGender({ name: msg.speaker, role: 'witness' });
+      return witGender === 'female' ? '👩' : '👨';
+    }
     return '💬';
   };
 
@@ -1165,6 +1295,27 @@ export default function Courtroom({ aiOnline }) {
           </span>
           <span className={`badge ${aiOnline ? 'badge-green' : 'badge-muted'}`} style={{ fontSize: '0.7rem' }}>{aiOnline ? '● AI Active' : '○ Offline'}</span>
           
+          {/* Quick Persona & Voice Toggles */}
+          <button 
+            type="button" 
+            className="btn btn-outline btn-sm" 
+            style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', height: '24px' }}
+            title="Toggle Opposing Counsel Persona"
+            onClick={() => setSelectedOpponent(prev => prev.id === 'ananya' ? OPPONENT_PERSONAS[1] : OPPONENT_PERSONAS[0])}
+          >
+            {selectedOpponent.avatar} Opponent: {selectedOpponent.gender === 'female' ? 'Ananya (F)' : 'Vikram (M)'}
+          </button>
+
+          <button 
+            type="button" 
+            className="btn btn-outline btn-sm" 
+            style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', height: '24px' }}
+            title="Toggle Bench Judge Persona"
+            onClick={() => setSelectedJudge(prev => prev.id === 'rohini' ? JUDGE_PERSONAS[1] : JUDGE_PERSONAS[0])}
+          >
+            {selectedJudge.avatar} Bench: {selectedJudge.gender === 'female' ? 'Rohini (F)' : 'Sharma (M)'}
+          </button>
+
           <select className="select" style={{ width: 'auto', padding: '0.1rem 1.4rem 0.1rem 0.6rem', fontSize: '0.7rem', height: '24px', background: 'var(--panel-strong)' }} value={aiStyle} onChange={(e) => setAiStyle(e.target.value)}>
              <option value="Standard">Style: Standard</option>
              <option value="Aggressive Indian Litigator">Style: Aggressive</option>
@@ -1186,6 +1337,46 @@ export default function Courtroom({ aiOnline }) {
           <button className="btn btn-danger btn-sm" style={{ fontSize: '0.7rem', padding: '0.2rem 0.5rem', height: '24px' }} onClick={endTrial} disabled={aiLoading || observerRunning}>End trial</button>
         </div>
 
+        {/* DYNAMIC COURTROOM TURN STATUS BANNER */}
+        <div 
+          style={{
+            marginBottom: '0.65rem',
+            padding: '0.45rem 0.85rem',
+            borderRadius: 'var(--r-md)',
+            background: turnState === 'user_turn' 
+              ? 'linear-gradient(90deg, rgba(74, 222, 128, 0.15) 0%, rgba(18, 34, 64, 0.4) 100%)'
+              : turnState === 'opposing_turn'
+              ? 'linear-gradient(90deg, rgba(201, 168, 76, 0.18) 0%, rgba(18, 34, 64, 0.4) 100%)'
+              : turnState === 'objection_turn'
+              ? 'linear-gradient(90deg, rgba(220, 38, 38, 0.25) 0%, rgba(18, 34, 64, 0.4) 100%)'
+              : 'linear-gradient(90deg, rgba(147, 51, 234, 0.18) 0%, rgba(18, 34, 64, 0.4) 100%)',
+            border: `1px solid ${
+              turnState === 'user_turn' ? 'var(--green)' : turnState === 'opposing_turn' ? 'var(--gold)' : turnState === 'objection_turn' ? 'var(--crimson)' : 'var(--blue)'
+            }`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '1rem' }}>
+              {turnState === 'user_turn' ? '🟢' : turnState === 'opposing_turn' ? '🟠' : turnState === 'objection_turn' ? '⚡' : '🟡'}
+            </span>
+            <span style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--white)' }}>
+              {turnState === 'user_turn' && `Your Turn to Argue — Counsel for ${role === 'prosecution' ? 'Prosecution' : 'Defense'}, address the Bench`}
+              {turnState === 'opposing_turn' && `${selectedOpponent.name} (Opposing Counsel) is presenting rebuttal...`}
+              {turnState === 'judge_turn' && `${selectedJudge.name} is giving judicial direction...`}
+              {turnState === 'objection_turn' && `Objection Lodged — Bench is evaluating admissibility...`}
+              {turnState === 'witness_turn' && `Cross-Examination in progress...`}
+            </span>
+          </div>
+
+          <span className="badge badge-muted" style={{ fontSize: '0.65rem' }}>
+            {selectedOpponent.gender === 'female' ? '👩‍💼 Female Voice' : '👨‍💼 Male Voice'} · {selectedJudge.gender === 'female' ? '👩‍⚖️ Female Bench' : '👨‍⚖️ Male Bench'}
+          </span>
+        </div>
+
         {/* WIDE ZOOM GALLERY GRID */}
         <div className="zoom-grid">
           {/* Box 1: Judge Seat */}
@@ -1194,14 +1385,14 @@ export default function Courtroom({ aiOnline }) {
               {userIsJudge && videoOn && cameraStream ? (
                 <video ref={videoRef} autoPlay playsInline muted className="zoom-webcam" />
               ) : (
-                <div className="zoom-avatar judge-avatar">⚖️</div>
+                <div className="zoom-avatar judge-avatar">{selectedJudge.avatar}</div>
               )}
               {(judgeSpeaker || (userIsSpeaking && userIsJudge)) && (
                 <div className="voice-wave-indicator"><span></span><span></span><span></span></div>
               )}
             </div>
             <div className="zoom-label">
-              <span>{userIsJudge ? `${displayName} (Judge)` : 'AI Judge'}</span>
+              <span>{userIsJudge ? `${displayName} (Judge)` : `${selectedJudge.name} (${selectedJudge.gender === 'female' ? 'Female' : 'Male'})`}</span>
               <span className="zoom-mute-icon">{ (userIsJudge && !audioOn) ? '🔇' : '🎙️' }</span>
             </div>
           </div>
@@ -1212,7 +1403,7 @@ export default function Courtroom({ aiOnline }) {
               {userIsPros && videoOn && cameraStream ? (
                 <video ref={videoRef} autoPlay playsInline muted className="zoom-webcam" />
               ) : (
-                <div className="zoom-avatar pros-avatar">🏛️</div>
+                <div className="zoom-avatar pros-avatar">{userIsPros ? '🏛️' : selectedOpponent.avatar}</div>
               )}
               {prosSpeaker && (
                 <div className="voice-wave-indicator"><span></span><span></span><span></span></div>
@@ -1224,7 +1415,7 @@ export default function Courtroom({ aiOnline }) {
                   ? `${displayName} (Pros)` 
                   : (sessionMode === 'multiplayer' && roomData?.seats?.prosecution 
                       ? `${roomData.seats.prosecution} (Pros)` 
-                      : 'AI Prosecution')}
+                      : `${selectedOpponent.name} (Pros · ${selectedOpponent.gender === 'female' ? 'Female' : 'Male'})`)}
               </span>
               <span className="zoom-mute-icon">{ (userIsPros && !audioOn) ? '🔇' : '🎙️' }</span>
             </div>
@@ -1236,7 +1427,7 @@ export default function Courtroom({ aiOnline }) {
               {userIsDef && videoOn && cameraStream ? (
                 <video ref={videoRef} autoPlay playsInline muted className="zoom-webcam" />
               ) : (
-                <div className="zoom-avatar def-avatar">🛡️</div>
+                <div className="zoom-avatar def-avatar">{userIsDef ? '🛡️' : selectedOpponent.avatar}</div>
               )}
               {defSpeaker && (
                 <div className="voice-wave-indicator"><span></span><span></span><span></span></div>
@@ -1248,27 +1439,30 @@ export default function Courtroom({ aiOnline }) {
                   ? `${displayName} (Def)` 
                   : (sessionMode === 'multiplayer' && roomData?.seats?.defense 
                       ? `${roomData.seats.defense} (Def)` 
-                      : 'AI Defense')}
+                      : `${selectedOpponent.name} (Def · ${selectedOpponent.gender === 'female' ? 'Female' : 'Male'})`)}
               </span>
               <span className="zoom-mute-icon">{ (userIsDef && !audioOn) ? '🔇' : '🎙️' }</span>
             </div>
           </div>
 
           {/* Box 4: Witness Box (Renders if active witness on stand) */}
-          {activeWitness && (
-            <div className={`zoom-card ${witnessSpeaker ? 'speaking-glow' : ''}`}>
-              <div className="zoom-video-container">
-                <div className="zoom-avatar witness-avatar">👤</div>
-                {witnessSpeaker && (
-                  <div className="voice-wave-indicator"><span></span><span></span><span></span></div>
-                )}
+          {activeWitness && (() => {
+            const witGender = detectGender({ name: activeWitness.name, role: activeWitness.role, text: activeWitness.testimony });
+            return (
+              <div className={`zoom-card ${witnessSpeaker ? 'speaking-glow' : ''}`}>
+                <div className="zoom-video-container">
+                  <div className="zoom-avatar witness-avatar">{witGender === 'female' ? '👩' : '👨'}</div>
+                  {witnessSpeaker && (
+                    <div className="voice-wave-indicator"><span></span><span></span><span></span></div>
+                  )}
+                </div>
+                <div className="zoom-label">
+                  <span>{activeWitness.name} ({witGender === 'female' ? 'Female Witness' : 'Male Witness'})</span>
+                  <span className="zoom-mute-icon">🎙️</span>
+                </div>
               </div>
-              <div className="zoom-label">
-                <span>{activeWitness.name} (Witness)</span>
-                <span className="zoom-mute-icon">🎙️</span>
-              </div>
-            </div>
-          )}
+            );
+          })()}
         </div>
 
         {/* WEBCAM CAMERA & AUDIO TOGGLES */}

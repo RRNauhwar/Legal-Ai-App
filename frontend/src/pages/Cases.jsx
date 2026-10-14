@@ -45,7 +45,7 @@ export default function Cases({ aiOnline }) {
   }, [filterType, filterDiff]);
 
   useEffect(() => {
-    if (preview) {
+    if (preview && preview.id && preview.id !== 'undefined') {
       loadPreviewRatings(preview.id);
       setUserRating(5);
       setUserReview('');
@@ -83,6 +83,7 @@ export default function Cases({ aiOnline }) {
   }
 
   async function loadPreviewRatings(caseId) {
+    if (!caseId || caseId === 'undefined') return;
     try {
       const data = await api.getCaseRatings(caseId);
       setPreviewRatings(data);
@@ -92,7 +93,7 @@ export default function Cases({ aiOnline }) {
   }
 
   async function submitRating() {
-    if (!preview) return;
+    if (!preview || !preview.id) return;
     setSubmittingRating(true);
     try {
       await api.rateCase(preview.id, userRating, userReview);
@@ -108,16 +109,16 @@ export default function Cases({ aiOnline }) {
   }
 
   async function generate() {
-    if (!aiOnline) {
-      toast.error('AI is offline. Case generation is unavailable right now.');
-      return;
-    }
     setGen(true);
     setPreview(null);
     try {
       const data = await api.generateCase(genType, genDiff);
-      setPreview(data.case);
-      toast.success('Case generated');
+      if (data && data.case) {
+        setPreview(data.case);
+        toast.success('Case generated successfully');
+      } else {
+        throw new Error('No case data received');
+      }
     } catch (error) {
       toast.error(`Generation failed: ${error.message}`);
     } finally {
@@ -225,7 +226,7 @@ export default function Cases({ aiOnline }) {
               </button>
             ))}
           </div>
-          <button className="btn btn-primary btn-full mt-2" onClick={generate} disabled={generating || !aiOnline}>
+          <button className="btn btn-primary btn-full mt-2" onClick={generate} disabled={generating}>
             {generating ? 'Generating...' : 'Generate case'}
           </button>
           {preview && (

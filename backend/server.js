@@ -29,22 +29,37 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const frontendDist = path.resolve(__dirname, '../frontend/dist');
 
-const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:5173')
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3001'
+];
+
+const envOrigins = (process.env.FRONTEND_URL || '')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(securityHeaders);
 app.use(cors({
   origin(origin, cb) {
-    if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) {
+      return cb(null, true);
+    }
     return cb(new Error('Origin not allowed'));
   },
   credentials: true,
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-CSRF-Cookie', 'X-Demo-Role', 'X-Demo-User-Id', 'X-Demo-User-Name', 'X-Demo-College-Id']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token', 'X-CSRF-Cookie', 'X-Demo-Role', 'X-Demo-User-Id', 'X-Demo-User-Name', 'X-Demo-College-Id', 'X-Request-Id']
 }));
 app.use(express.json({ limit: process.env.JSON_BODY_LIMIT || '2mb', strict: true }));
 app.use('/api/', rateLimit({

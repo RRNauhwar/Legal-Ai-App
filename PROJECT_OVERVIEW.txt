@@ -1,0 +1,304 @@
+================================================================================
+                       NYAYASIM v2.0 - PROJECT OVERVIEW
+       Virtual Courtroom Moot Court & AI Legal Education Platform
+================================================================================
+
+1. EXECUTIVE SUMMARY & MISSION
+--------------------------------------------------------------------------------
+NyayaSim v2.0 is an enterprise-grade AI-powered virtual courtroom simulator, 
+moot court trainer, and legal education monorepo platform tailored primarily 
+for legal education, advocates, law students, and law schools.
+
+The project bridges practical courtroom advocacy with modern artificial 
+intelligence. It enables users to participate in simulated courtroom trials, 
+draft real-world legal documents, study statutory Indian law (IPC/BNS, CrPC/BNSS, 
+Evidence Act/BSB, Constitution of India), receive real-time feedback from an AI 
+Judge and AI Opposing Counsel, and participate in institutional law school 
+tournaments and rankings.
+
+Key Highlights:
+- Multi-LLM Support: Integrated with Anthropic Claude, OpenAI (GPT-4o), and 
+  Google Gemini, with automatic fallback handling.
+- Hybrid Online/Offline Execution: Operates seamlessly in online AI mode and 
+  zero-dependency offline mode using a pre-scripted legal rule engine.
+- Full Monorepo: Contains a React Single Page Application (SPA), Node.js Express 
+  Backend, and an Android Native App (Kotlin + Jetpack Compose + Clean Architecture).
+- Production-Ready Security & SaaS: Features CSRF protection, security headers, 
+  audit logging, rate limiting, and subscription/billing tier frameworks.
+
+
+================================================================================
+2. SYSTEM ARCHITECTURE & TECH STACK
+================================================================================
+
+Monorepo Architecture:
+----------------------
+- Root Monorepo (`nyayasim-monorepo`): Configured with concurrent scripts for 
+  installing dependencies and building production bundles across frontend and backend.
+- Frontend (`/frontend`): Built with React 18, Vite 5, React Router v6, 
+  Web Speech API, Supabase JS Client, and custom CSS design systems.
+- Backend (`/backend`): Built with Node.js 20, Express 4, Native Fetch, 
+  custom asynchronous JSON-backed DB Engine, and Rate Limiting Middleware.
+- Mobile App (`/android`): Native Android workspace leveraging Kotlin, 
+  Jetpack Compose, Android Architecture Components (ViewModel, StateFlow), 
+  Room Database for local storage, Hilt Dependency Injection, and Retrofit.
+- Deployment Platform (`render.yaml`): Web Service specification for Node.js 20 
+  deployments on Render.com with environment configuration.
+
+Technology Matrix:
+------------------
+Layer                Technologies / Libraries Used
+-------------------  -----------------------------------------------------------
+Frontend             React 18, Vite 5, React Router DOM v6, React Hot Toast, Supabase
+Backend              Node.js, Express, @anthropic-ai/sdk, express-rate-limit, cors, dotenv, uuid
+Mobile (Android)     Kotlin 2.0+, Jetpack Compose, Material 3, Room, Retrofit 2, Hilt, Coroutines
+Database             Lightweight file-backed JSON DB engine (Asynchronous atomic Queue) & Room DB (Android)
+AI Integrations      Anthropic (Claude 3.5/Haiku), OpenAI (GPT-4o), Google Gemini (2.5 Flash), Web Speech API
+Security             CSRF Guards, Security Headers (Helmet style), Input sanitization, Audit logging
+
+
+================================================================================
+3. MONOREPO DIRECTORY & FILE STRUCTURE
+================================================================================
+
+.
+├── README.md                   # Quickstart guide & environment configuration
+├── package.json                # Monorepo root scripts (install:all, build, start)
+├── render.yaml                 # Deployment configuration for Render platform
+├── backend/
+│   ├── package.json            # Node.js backend dependencies & scripts
+│   ├── server.js               # Express server entry point, CORS, security, middleware
+│   ├── middleware/
+│   │   └── security.js         # CSRF, rate-limit, audit log, payload validation
+│   ├── data/
+│   │   ├── academyLessons.json # Curated lessons & legal training modules
+│   │   └── db.json             # File-backed JSON store for logs, stats & community
+│   ├── routes/
+│   │   ├── ai.js               # AI endpoints (courtroom, tutor, drafter, cases)
+│   │   ├── cases.js            # Case management, seeding, filtering, searching
+│   │   ├── rooms.js            # Live courtroom session states & room creation
+│   │   ├── academy.js          # Curriculum, progress tracking, quiz submissions
+│   │   ├── academyCampaign.js  # Daily legal challenges & achievements
+│   │   ├── community.js        # Community forum posts, comments, likes
+│   │   ├── ratings.js          # Case rating system
+│   │   └── stats.js            # Analytics, performance reports & leaderboards
+│   └── services/
+│       ├── claudeService.js    # AI service abstraction (Gemini, OpenAI, Anthropic)
+│       ├── db.js               # Asynchronous JSON File Database implementation
+│       └── logger.js           # Structured winston-style console & error logger
+├── frontend/
+│   ├── package.json            # Vite frontend dependencies
+│   ├── vite.config.js          # Vite build & proxy settings
+│   ├── index.html              # HTML5 entry template & PWA metadata
+│   ├── public/                 # Static assets, icons, service worker (sw.js)
+│   └── src/
+│       ├── main.jsx            # React root mount
+│       ├── App.jsx             # Main router, navigation bar & app frame
+│       ├── context/
+│       │   └── AuthContext.jsx # Authentication state (Supabase auth + Guest Mode)
+│       ├── utils/
+│       │   ├── api.js          # Fetch wrapper for REST endpoints
+│       │   └── supabase.js     # Supabase client initialization
+│       ├── hooks/
+│       │   ├── useVoice.js     # Speech-to-Text browser recognition wrapper
+│       │   └── useSpeechPlayback.js # Text-to-Speech audio synthesizer
+│       ├── components/
+│       │   └── CommandPalette.jsx # Keyboard shortcut modal (Cmd+K)
+│       ├── data/
+│       │   ├── lessons.js      # Academy structured learning data
+│       │   ├── legalResources.js# Statutory legal acts reference & precedents
+│       │   └── offlineEngine.js# Full offline AI simulator fallback rules engine
+│       ├── pages/
+│       │   ├── Dashboard.jsx   # Command Center & user summary
+│       │   ├── Cases.jsx       # Moot Case library & generator UI
+│       │   ├── Courtroom.jsx   # Virtual Courtroom simulator with live audio/text
+│       │   ├── Academy.jsx     # Learning paths, quizzes & certifications
+│       │   ├── JudgeBeaksPath.jsx # Interactive path with AI tutor "Judge Beaks"
+│       │   ├── StudyGuide.jsx  # AI Legal Assistant & Statutory Explainers
+│       │   ├── Drafter.jsx     # Legal document drafting & AI grading desk
+│       │   ├── Community.jsx   # Law student network & discussion boards
+│       │   ├── Leaderboard.jsx # Verified advocate & college rankings
+│       │   ├── Career.jsx      # SaaS tier billing & recruiter portal
+│       │   └── AuthPage.jsx    # Login / signup modal & guest login handler
+│       └── styles/
+│           └── global.css      # Custom dark-theme styling, CSS variables & layouts
+└── android/
+    ├── build.gradle.kts        # Android root Gradle configuration
+    ├── settings.gradle.kts     # Project settings & include modules
+    ├── README.md               # Android overview docs
+    └── app/
+        ├── build.gradle.kts    # App dependencies (Compose, Room, Hilt, Retrofit)
+        └── src/main/
+            ├── AndroidManifest.xml
+            └── java/com/nyayasim/app/
+                ├── MainActivity.kt
+                ├── NyayaSimApplication.kt
+                ├── di/
+                │   └── AppModule.kt
+                ├── core/
+                │   ├── data/       # Room database & NyayaSim API Repository implementation
+                │   └── domain/     # Clean Architecture models & interfaces
+                ├── navigation/     # Jetpack Navigation setup
+                └── feature/        # Compose UI Screens (Dashboard, Cases, Study, Settings)
+
+
+================================================================================
+4. KEY FUNCTIONAL MODULES & FEATURES
+================================================================================
+
+4.1 Command Center (Dashboard)
+------------------------------
+- Personal Advocate Dashboard showing XP, user level, case win rates, and streak.
+- Real-time backend AI connectivity badge ('AI Active' vs 'Offline Mode').
+- Quick access to active courtroom sessions, recent drafting drills, and study paths.
+
+4.2 Case Library & Dynamic AI Case Generator
+-------------------------------------------
+- Extensive repository of criminal, civil, constitutional, family, and cyber law cases.
+- Case difficulty tiers: Beginner, Intermediate, Advanced.
+- On-Demand AI Case Generator: Produces realistic legal briefs complete with facts, 
+  prosecution arguments, defense arguments, statutory citations, and exhibit lists.
+
+4.3 Virtual Courtroom Moot Simulator
+-------------------------------------
+- Role Selection: Play as Prosecution Counsel or Defense Counsel.
+- Dual Mode Execution: Online AI (LLM backend) or Offline Rule Engine fallback.
+- AI Bench & Counsel:
+  * AI Judge: Interjects, asks clarifying questions, rules on objections.
+  * AI Opposing Counsel: Rebuts arguments using relevant case law.
+  * Witness Cross-Examination: Interactive interrogation of witnesses.
+- Dynamic Courtroom Actions:
+  * Object (Leading, Hearsay, Relevance, Speculation).
+  * Submit Exhibit / Cite Section.
+  * Voice Input (Web Speech API) & Speech Synthesis audio output.
+  * Final Verdict Delivery & Detailed Advocate Performance Scoring.
+
+4.4 AI Legal Academy & Campaign ("Judge Beaks" AI Tutor)
+------------------------------------------------------
+- Structured Legal Curriculum: IPC / Bharatiya Nyaya Sanhita (BNS), CrPC / 
+  Bharatiya Nagarik Suraksha Sanhita (BNSS), Evidence Act, Constitutional Law.
+- "Judge Beaks" AI Legal Tutor: Provides SSE (Server-Sent Events) streaming answers 
+  to clarify legal doubts, suggest study drills, and explain complex precedents.
+- Interactive Quizzes, daily streaks, badges, and progress tracking.
+
+4.5 AI Legal Assistant & Statutory Explainers
+---------------------------------------------
+- Quick research tool for statutory legal sections and constitutional articles.
+- Search for Indian Supreme Court and High Court precedents.
+- Automated legal argument enhancer and citation helper.
+
+4.6 Drafting Desk (Legal Document Builder & AI Evaluator)
+---------------------------------------------------------
+- Templates for Bail Applications, Writ Petitions, Legal Notices, Contracts, and 
+  Criminal Complaints.
+- Real-Time AI Draft Grading: Analyzes submitted drafts for legal precision, 
+  completeness, statutory formatting, and provides actionable improvement scores.
+
+4.7 Community Arena & National Leaderboards
+--------------------------------------------
+- Inter-college advocacy ranking and national law school leaderboard.
+- Community discussion boards for legal debates, case summaries, and moot updates.
+- Performance statistics tracking confidence, accuracy, fluency, and legal reasoning.
+
+4.8 SaaS Operations, Billing & Recruiter Portal
+-----------------------------------------------
+- Tiered subscription plans (Free Guest, Student Advocate Pro, Law Firm Enterprise).
+- Recruiter portal enabling law firms and senior advocates to evaluate student 
+  performance metrics and courtroom transcripts for recruitment.
+
+
+================================================================================
+5. AI INTEGRATION & OFFLINE ENGINE
+================================================================================
+
+Multi-Provider LLM Integration (`claudeService.js`):
+- Support for 3 major AI API Providers:
+  1. Google Gemini (via `gemini-2.5-flash` model endpoint)
+  2. OpenAI (via `gpt-4o-mini` model endpoint)
+  3. Anthropic (via `claude-haiku-4-5-20251001` or standard Claude models)
+- Provider Fallback: System automatically tries configured keys in sequence. 
+  If external AI is unavailable or fails, it falls back gracefully without breaking UI.
+
+Offline Legal Simulation Engine (`offlineEngine.js`):
+- Full client-side simulation capable of running without an internet connection or backend.
+- Contains pre-scripted legal responses categorized by keywords (objections, 
+  sustained/overruled rulings, opening/closing statements, evidence submissions).
+- Includes landmark Indian Supreme Court case law citations (e.g., Sharad Birdhichand 
+  Sarda v. State of Maharashtra, S.R. Bommai v. Union of India, Maneka Gandhi v. 
+  Union of India, K.S. Puttaswamy v. Union of India).
+
+
+================================================================================
+6. ANDROID NATIVE APPLICATION ARCHITECTURE
+================================================================================
+
+- Clean Architecture Pattern: Split into `core/domain`, `core/data`, and `feature`.
+- Jetpack Compose UI: Modern declarative UI components for Dashboard, Cases, 
+  Study, and Settings screens.
+- Room Local Database: Caching seed cases, study modules, and user preferences offline.
+- Retrofit & OkHttp: Seamless REST API communication with the Node.js Express backend.
+- Hilt Dependency Injection: Modular component wiring for repositories, network clients, 
+  and view models.
+
+
+================================================================================
+7. SECURITY, RATE LIMITING & DATA PERSISTENCE
+================================================================================
+
+Backend Security (`security.js`):
+- CSRF Protection (`csrfGuard`): Enforces Anti-CSRF header verification.
+- Security Headers: Sets frame restrictions, XSS protection, and content type sniffing guards.
+- Payload Validation (`validateJsonBody`): Restricts body sizes and verifies structure.
+- Audit Logging (`auditLog`): Logs API access requests with request IDs for security auditability.
+- Rate Limiting (`express-rate-limit`): Protects `/api/` and `/api/ai/` endpoints against DDoS 
+  and token overuse.
+
+Database Engine (`db.js`):
+- Asynchronous File Database (`JSONDatabase`) persisting to `data/db.json`.
+- Uses an in-memory queue to guarantee atomic sequential write operations without blocking 
+  the main Event Loop.
+- Manages collections for `performances`, `posts`, `post_likes`, `post_comments`, 
+  `case_ratings`, `audit_logs`, `academy_progress`, and `academy_analytics`.
+
+
+================================================================================
+8. LOCAL DEVELOPMENT & DEPLOYMENT INSTRUCTIONS
+================================================================================
+
+Prerequisites:
+- Node.js (v18 or v20+)
+- npm (v9+)
+- Java JDK 17+ and Android Studio (for Android build)
+
+Step 1: Installation
+--------------------
+Run in the monorepo root:
+  npm run install:all
+
+Step 2: Environment Setup
+-------------------------
+1. Backend: Copy `backend/.env.example` to `backend/.env`
+   Set one or more AI API keys:
+   - `GEMINI_API_KEY`
+   - `OPENAI_API_KEY`
+   - `ANTHROPIC_API_KEY`
+
+2. Frontend: Copy `frontend/.env.example` to `frontend/.env` (Optional: leave blank for Guest Mode).
+
+Step 3: Running the Application
+-------------------------------
+Start Backend Server (Port 3001 or process.env.PORT):
+  npm run start:backend
+
+Start Frontend Dev Server (Port 5173):
+  npm run dev --prefix frontend
+
+Open Browser:
+  http://localhost:5173
+
+Build Production Bundle:
+  npm run build
+
+================================================================================
+                                END OF OVERVIEW
+================================================================================

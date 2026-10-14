@@ -20,7 +20,7 @@ const wrap = fn => async (req, res) => {
     console.error('[AI]', { requestId: req.requestId, message: e.message });
     res.status(e.status || 500).json({
       success: false,
-      error: e.status ? e.message : 'AI service failed. Please try again.',
+      error: e.message || 'AI service failed. Please try again.',
       requestId: req.requestId
     });
   }
